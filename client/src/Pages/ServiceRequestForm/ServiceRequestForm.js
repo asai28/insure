@@ -36,7 +36,9 @@ export default class Example extends React.Component {
     this.toggle = this.toggle.bind(this);
     this.state = {
       isOpen: false,
-      startDate: moment()
+      startDate: moment(),
+      companyName: "",
+      companyNames: []
     };
     this.handleChange = this.handleChange.bind(this);
   }
@@ -53,8 +55,19 @@ export default class Example extends React.Component {
   }
 
   handleSubmit = e => {
-    // e.preventDefault();
+    e.preventDefault();
+    this.setState({
+      companyNames: this.state.companyNames.concat(this.state.companyName)
+    });
   }
+
+  handleInputChange = e => {
+    const {name, value} = e.target;
+    this.setState({
+      [name]: value
+    });
+  }
+
 
   render() {
     return (
@@ -94,12 +107,22 @@ export default class Example extends React.Component {
         <Container className="mt-3">
           <Form>
             <FormGroup>
-              <Label for="companyName">Company Name</Label>
+            <Label for="companyName">Company Name</Label>
+            <Input type="select" name="select" id="exampleSelect">
+                {this.state.companyNames.length === 0 ? 
+                <option>...</option> :
+                this.state.companyNames.map(option => 
+                <option>{option}</option>
+                )
+                }
+              </Input>
+              <Label for="companyName">New Company Name?</Label>
               <Input
                 type="text"
                 name="companyName"
                 id="companyName"
                 placeholder="Enter the name of the company"
+                onChange={this.handleInputChange}
               />
             </FormGroup>
             <FormGroup>
