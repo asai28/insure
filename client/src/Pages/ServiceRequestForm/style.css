@@ -20,4 +20,9 @@ body{
     min-height: 297mm;
     margin-left: auto;
     margin-right: auto;
-}  
+}    
+
+.error-message{
+    color:red;
+    font-size: 12px;
+}
