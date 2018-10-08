@@ -1,0 +1,35 @@
+{
+  "name": "insure",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "express-generator": "^4.16.0",
+    "gh-pages": "^2.0.0",
+    "jspdf": "^1.4.1",
+    "nodemon": "^1.18.4",
+    "pdfkit": "^0.8.3",
+    "sequelize": "^2.0.0-rc1",
+    "sequelize-cli": "^4.1.1",
+    "sql": "^0.78.0",
+    "sqlite3": "^4.0.2",
+    "yarn": "^1.10.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node server && yarn start /client"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/asai28/insure.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/asai28/insure/issues"
+  },
+  "homepage": "https://github.com/asai28/insure#readme"
+}
