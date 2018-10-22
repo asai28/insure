@@ -35,6 +35,7 @@ import {Base64} from "js-base64";
 
 import { Table } from 'reactstrap';
 import cities from "../../utils/cities.json";
+import API from "../../utils/API";
 
 
 export default class Example extends React.Component {
@@ -50,6 +51,8 @@ export default class Example extends React.Component {
       country: "United States",
       topic: "",
       isHidden : true,
+      validPhone: false,
+      contactPhone: 1,
       form :{
         price:100,
         quantity:2,
@@ -88,11 +91,15 @@ export default class Example extends React.Component {
       });
     }
   }
-
-  componentWillReceiveProps= (nextProps) => {
-    this.setState({
-      isHidden: !this.state.isHidden
-    });
+// this.setState({validPhone: res.valid})
+  validatePhone = () => {
+    API.numAPI(this.state.contactPhone)
+    .then(function(res) {
+      console.log(res);
+      this.setState({validPhone: res.valid})
+      console.log(this.state.validPhone)
+    })
+    .catch(err => console.log(err));
   }
 
   handleChange(date) {
@@ -107,6 +114,7 @@ export default class Example extends React.Component {
     this.setState({
       companyNames: this.state.companyNames.concat(this.state.companyName)
     });
+    this.validatePhone();
   }
 
   handleInputChange = e => {
@@ -209,7 +217,7 @@ export default class Example extends React.Component {
           <Form>
             <FormGroup>
             <Label for="companyName">Company Name</Label>
-            <Input type="select" name="select" id="exampleSelect">
+            <Input type="select" name="companyName" id="companyNameSelect" onChange={this.handleInputChange}>
                 {this.state.companyNames.length === 0 ? 
                 <option>...</option> :
                 this.state.companyNames.map(option => 
@@ -233,13 +241,14 @@ export default class Example extends React.Component {
                 onChange={this.handleChange}
                 name="startDate"
                 placeholder="Enter date of request"
+                onChange={this.handleInputChange}
               />
             </FormGroup>
             <FormGroup>
               <Label for="paymentForTraining">
                 Who is paying for Training?
               </Label>
-              <Input type="select" name="select" id="exampleSelect">
+              <Input type="select" name="paymentForTraining" id="paymentForTraining" onChange={this.handleInputChange}>
                 <option>Producer</option>
                 <option>Contract</option>
                 <option>Direct Sale</option>
@@ -252,7 +261,7 @@ export default class Example extends React.Component {
 
               <FormGroup>
               <Label for="topic">Topic</Label>
-              <Input type="select" name="topic" id="topic">
+              <Input type="select" name="topic" id="topic" onChange={this.handleInputChange}>
                 <option name="topic" value={"1"} onClick={this.handleTraining}>1</option>
                 <option name="topic" value={"2"} onClick={this.handleTraining}>2</option>
                 <option name="topic" value={"3"} onClick={this.handleTraining}>3</option>
@@ -268,6 +277,7 @@ export default class Example extends React.Component {
                 name="streetAddress"
                 id="streetAddress"
                 placeholder="Street Address"
+                onChange={this.handleInputChange}
               />
               <Label for="zip">ZIP</Label>
               <Input
@@ -275,14 +285,15 @@ export default class Example extends React.Component {
                 name="zip"
                 id="zip"
                 placeholder="ZIP"
+                onChange={this.handleInputChange}
               />
               <Label for="country">Country</Label>
-              <Input type="select" name="country" id="country">
+              <Input type="select" name="country" id="country" onChange={this.handleInputChange}>
                 <option>United States</option>
                 {Object.keys(cities).map(country => <option>{country}</option>)}
               </Input>
               <Label for="state">State</Label>
-              <Input type="select" name="state" id="state">
+              <Input type="select" name="state" id="state" onChange={this.handleInputChange}>
                 <option>Arizona</option>
                 {console.log(cities[this.state.country])}
                 {Object.keys(cities[this.state.country]).map(city => <option>{cities[this.state.country][city]}</option>)}
@@ -293,11 +304,12 @@ export default class Example extends React.Component {
                 name="city"
                 id="city"
                 placeholder="Enter City"
+                onChange={this.handleInputChange}
               />
             </FormGroup>) : ""}
             <FormGroup>
               <Label for="langOfTraining">Language of training</Label>
-              <Input type="select" name="select" id="exampleSelect">
+              <Input type="select" name="langTraining" id="langTraining" onChange={this.handleInputChange}>
                 <option>English</option>
                 <option>Spanish</option>
                 <option>Bilingual</option>
@@ -311,6 +323,7 @@ export default class Example extends React.Component {
                 name="numStudents"
                 id="numStudents"
                 placeholder="Enter number of students"
+                onChange={this.handleInputChange}
               />
             </FormGroup>
             
@@ -321,6 +334,7 @@ export default class Example extends React.Component {
                 name="contactFirstName"
                 id="contactFirstName"
                 placeholder="Enter first name"
+                onChange={this.handleInputChange}
               />
               <Label for="contactLastName">Contact Person's Last Name</Label>
               <Input
@@ -328,6 +342,7 @@ export default class Example extends React.Component {
                 name="contactLastName"
                 id="contactLastName"
                 placeholder="Enter last name"
+                onChange={this.handleInputChange}
               />
             </FormGroup>
             <FormGroup>
@@ -337,6 +352,7 @@ export default class Example extends React.Component {
                 name="contactEmail"
                 id="contactEmail"
                 placeholder="Enter the email of the contact"
+                onChange={this.handleInputChange}
               />
             </FormGroup>
             <FormGroup>
@@ -345,7 +361,8 @@ export default class Example extends React.Component {
                 type="text"
                 name="contactPhone"
                 id="contactPhone"
-                placeholder="Enter the phone number of the contact"
+                placeholder="Valid phone format <countrycode>xxxxxxxxx"
+                onChange = {this.handleInputChange}
               />
             </FormGroup>
             <FormGroup>
@@ -357,13 +374,14 @@ export default class Example extends React.Component {
                 name="contactCell"
                 id="contactCell"
                 placeholder="Enter the cell number of the contact"
+                onChange={this.handleInputChange}
               />
             </FormGroup>
             <FormGroup>
               <Label for="instructions">
                 Provide instructions to service provider
               </Label>
-              <Input type="textarea" name="instructions" id="instructions" />
+              <Input type="textarea" name="instructions" id="instructions" onChange={this.handleInputChange} />
             </FormGroup>
 
             <Button onClick={this.handleSubmit}>Submit</Button>
