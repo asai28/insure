@@ -15,9 +15,12 @@ import {
 } from "reactstrap";
 
 /*Imports required for Form Group */
-import { Button, Form, FormGroup, Label, Input } from "reactstrap";
+import { Button, Form, FormGroup, Label, Input, CustomInput } from "reactstrap";
 import { Container } from "reactstrap";
 import "./style.css";
+
+/*Import checkbox from components*/
+import Checkbox from "../../Components/Checkbox/index";
 
 /*Imports required for React Calendar */
 import DatePicker from "react-datepicker";
@@ -37,40 +40,49 @@ import { Table } from 'reactstrap';
 import cities from "../../utils/cities.json";
 import API from "../../utils/API";
 
+let styles = {
+  'Address' : {
+    'display' : 'none'
+  }
+}
 
 export default class Example extends React.Component {
   constructor(props) {
     super(props);
-
     this.toggle = this.toggle.bind(this);
     this.state = {
-      isOpen: false,
       startDate: moment(),
       companyName: "",
-      companyNames: ["Company","5 D Construction","A-1 Restaurants","A&M","Aaron Clark Industries DBA Desert Foothills Landscape Management","ACS Engineering","Advance Lining","AK&J Sealants LLC","Alliance Plumbing","Alpha Group","Alpine","Alterra Pest Control","Ameri-fab","American Eagle Fire Protection","American Fire","American Leadership Academy","American Solar and Roofing","Apache Equipment Rentals","ARCA","Arion Care Solutions","Arizona Cooperative Therapies","Arizona Industries for the Blind (AIB)","Arizona Kawasaki","Arizona Materials","Arizona Pacific Pulp and Paper","Arizona Protection Agency","Arizona Roofing Contractor Association (ARCA)","Arizona Stone","Artisan Stone","Asprient Properties","AZ Border Transfer","AZ Industrial Pipeline Video","AZ Repair Masons","AZTechRadiology","Bestway Electric Motor","Beyond Stone","BIG Sur","Blount Contracting","Blue Sky Pest Control","BluePrint Hope High School","Bob's Roofing","Bonded Logic","Botta Concrete","Brakemax","Brown Brothers Asphalt","BSA","Burdette Cabinets","Burke and Happy Valley","Burke Basic","C & C Roofing","C&S Sweeping","C&S Sweeping","Caballero Dairy","CAID","Canyon State Drywall","Capilano Properties","Caretakers Landscaping and Tree Managment","CellularOne","Central Arizona Supply","Century Apartments","Certa Pro","Champagne Pools","Cheyenne River Sioux Tribe","Choice Academies","Cholla Livestock","Cholla Management Group","City of Maricopa","Classic Roofing","Clean Cut","ClearSky Auto","Clearwater","Clements Agency","Cobre Valley","Cochise Tech and Development","Community Care Solutions","Community Landscape Management","Cooper Roofing","Copperstate Metals","Countertop Creations","Courier Graphics","CoxReels","CPC","Crating Technology","Crazy Horse","Creative Innervisions LLC","CrossRoad Carriers","Crossroads for Women","Crum Plumbing","CSI","DADC","Dairyland Milk","Dalmolin Excavating Inc","DCB","Defense Pest Control","Desert Fleet","Desert Sun Moving","Desperado Dairy","DHI Communities","Dine BII Association for Disabled Citizens Inc","Dirt","Division 9","DMT","Dolphinaris","Door Mill","Dr. Erin Bradley Family Medicine","Drawer Connection, Inc","Dry Force","DuBrook","Duffy Development","Dugan Calf Farm","Duncan Families Farms","EFG America","Elite Roofing Supply","Embrey","Emergency Restoration","Ennssolutions","Epifini","Esteem Children's Services","Evergreen Turf","Family Support Resources","Farm Fresh","Felix Construction","FMG","Foam Experts Roofing Inc","Fondomonte","Frontline Exterminating","Garden House","GKD Management","GPM LandScape","Grabber Power Products","Granite Basin Roofing","GreenScapes","Gryphon Roofing","Haggai","Happy Valley","Haralson Tire","Hard Rock Concrete","Harvest Power Community Development Group Inc","Hensel Phelps","Houston Trucking","Hozhoni Foundation Inc","Hualapai","Huerta Trucking","Hurricane Fence Co","Hwal'bayBaj","Imagine Architectural Concrete","Inegrety Comercial Cleaning","Inn-Apartments","Innovative Green Technologies","Insure Compliance","InterMountain West Civil Contractors","Interstate Batteries","Invader Pest","JFN Mechanical","Jicarilla Apache Nation","JLC Roofing","JMH Trucking","JPCI","Juarez Contracting","Kann Enterprises_Interstate Batteries","KC Homes","Keystone","Kingman Academy of Learning","Kinkaid Civil Construction","La Canasta","Arizona Society of Safety Engineers (ASSE)","Lakin Milling","Larson Waste","LeBaron & Carroll","Leeds West Groups","Lehi Valley Trading","Leinbach Company Management Inc","LGO","Liberty Fence & Supply, LLC","Lifetime Roof Systems Inc.","Lindel Mechanical","LMC","LoneStar Trucking","Lumberjack Timber","Lyons Roofing","M&B Mechanical","Maddy's Pools","McManus Construction","Metal Masters Mechanical","Metric Roofing","Metro Fire Equipment Inc.","Metro Phoenix PHCC","Michael Brothers","MicroBlend","Mirage Plastering","Modern Paving","Monarch","National Fire Control","NCT","Neiders Company","New folder","New Horizon Youth Homes","New Western","Norman S Wright Co Inc.","Nunez Contracting","Old Tucson","Onni Properties","Otto Transportation","OTTO Trucking","Overleys","Overson Roofing","Paramount Roofing","Paramount Supply","Patriot Disposal","Paul Johnson Drywall","Paul Rich Roofing","Penguin Air","Perco Rock","PEST","Pete King Construction","Phoenix Extermination","Phoenix Recycling","Phoenix Towing Service","Pima Air & Space Museum","Pinal Feeding","Pinal Feeding Red River","PindernationElectric","Pinnacle Restoration","Pioneer Landscape","Pioneer Roofing Co","Planetary Science Institute","Platinum Plastering","Plexus","Plumb Plumbing","PM Plumbing","Prisma","ProSource Roofing","Pueblo of Sandia","Pueblo of Zuni","Pure Landscape","PVIC","Pyramid Technologies","Quechan Tribe","R.T. Brown","Rapid Material Transport","Red Mountain","Red Mountain Rentals","Regency Towers Assocation","Rest Assured","Right Away","Rigid Industries","Rigid Industries","RKS Plumbing","RO Landscape","Robert's Tire","Roberts Tire","Rocky mountain restoration","Romona Farms","Roofing Southwest","Roofing Supply Group","Rovey Dairy","RSG Roofing Supplies","SACATE","Sage","SAGE Counseling","Saguaro Trucking","SAK Plumbing","San Tan Landscape Management","Scottsdale Livestock","SFI","Sierra Signs","Sitting Bull College","Sonoran Air","Sonoran Landesign","Southwest rock","Specialty Orthopaedics","Spectrum","Sportsman Concrete","Stapley Action Garage Door","Star Roofing Inc","Steamy Concepts","Stillwater Landscape Mgmt","Stockwell Scientific","Storage Equipment Systems Inc","Sun City CareGivers","Sun Grinding","Sun State Plumbing","Sun Valley Supply","Sundance","Sunrise Crane Services Inc","Sunshine Acres","Sunshine Residential","Sunstate Plumbing","Sunstate Sweeping","Tecta America Arizona","Teledata","The Mahoney Group","The Maid Connection","The Manning Group","Titan Pest Control","TMC Landscape","Total Waste Management","Tree Doctors","Tremco","Trinsic on Broadway","Trinsic on Indian School","UEB","United Food Bank","Univeral Piping","USI Mesa Insulation","VIP Roofing","W. R. Schulz Properties","Weigand-Omega Management","Weinberger","Western Transport Logistics Inc.","Western Utility Contractors LLC","Whitfill Nursery","Winslow Indian Health Care Center","Wolf Waste LLC","Yavapai-Apache Cliff Castle Casino Hotel","Yavapai-Apache Nation","Young Builders Roofing - A-S Urethane Systems","Marlin Mechanical","Brooks Bros Utility","Prime Pest Control","The HUB Bar and Grill","5 Guys Construction","Zion Compassion Care","Banker Insulation","Cummings Plumming","Summit Inc","Austin Centers for Exceptional Students (ACES)","Sahara Development Inc. Tucson","Nexus Pool Care","J Bar G Restaurants LLC","DAS Products, Inc","Community Medical Services","Appliance Part Company","Saguaro Foundation","Solana Outdoor Living, LLC","Ron Brock's Heating and Cooling","Summit Insurance","Cool Touch, LLC","FLP, LLC","Little Priest College","T&T Cleaning and Restoration","Mt. Graham Hospital","Winnebago Tribe","United Tribes Technical College (UTTC)","TLC Supportive Living Services of Arizona Inc.","Green Valley Hospital","Young Future Tire","New Horizon Community Care","EPCOR Water","Arizona Provider Training (APT)","Aneva Solar LLC","Allegiant Health Care and Rehabilitation","Marc Community Resources Inc.","Central Arizona Project","HJ3","Apache Nugget","Pursuit Builders","Southwest Risk","Achilles AC","Hula Hut","Revamp Roofing","Tega Industries, Inc.","Dutt Hospitality Group","Standing Rock Sioux Tribe","Anthem Pest Control","All Things Metal","Environments by Rojas","State Seal","Cullum Homes Inc","Roofing Specialist","Sault Tribe","Spartan Electric Inc.","ConnectionsAZ","Arizona Sanitation Services","Liberty Companies","Coppertree Construction","Sunstate Plumbing","Reidhead Plumbing & Solar","Apache Medical Transport","Havasu Landing Resort and Casino","Royal Wall Systems","CAM Properties","Parks and Sons of Sun City","APCON Construction Co","West Coast Roofing","Picuris Pueblo","Royal Renovation","Mescalero Tribe","Hendel's Air Conditioning","CMMV LLC","Vroom","ITC AZ","Mountain Power Electircal","Sunrise Park Resort","South Eastern Arizona Behavioral Health","Proof. Pest Control","Caldwell Construction"],
+      companyNames: ["5 D Construction","A-1 Restaurants","A&M","Aaron Clark Industries DBA Desert Foothills Landscape Management","ACS Engineering","Advance Lining","AK&J Sealants LLC","Alliance Plumbing","Alpha Group","Alpine","Alterra Pest Control","Ameri-fab","American Eagle Fire Protection","American Fire","American Leadership Academy","American Solar and Roofing","Apache Equipment Rentals","ARCA","Arion Care Solutions","Arizona Cooperative Therapies","Arizona Industries for the Blind (AIB)","Arizona Kawasaki","Arizona Materials","Arizona Pacific Pulp and Paper","Arizona Protection Agency","Arizona Roofing Contractor Association (ARCA)","Arizona Stone","Artisan Stone","Asprient Properties","AZ Border Transfer","AZ Industrial Pipeline Video","AZ Repair Masons","AZTechRadiology","Bestway Electric Motor","Beyond Stone","BIG Sur","Blount Contracting","Blue Sky Pest Control","BluePrint Hope High School","Bob's Roofing","Bonded Logic","Botta Concrete","Brakemax","Brown Brothers Asphalt","BSA","Burdette Cabinets","Burke and Happy Valley","Burke Basic","C & C Roofing","C&S Sweeping","C&S Sweeping","Caballero Dairy","CAID","Canyon State Drywall","Capilano Properties","Caretakers Landscaping and Tree Managment","CellularOne","Central Arizona Supply","Century Apartments","Certa Pro","Champagne Pools","Cheyenne River Sioux Tribe","Choice Academies","Cholla Livestock","Cholla Management Group","City of Maricopa","Classic Roofing","Clean Cut","ClearSky Auto","Clearwater","Clements Agency","Cobre Valley","Cochise Tech and Development","Community Care Solutions","Community Landscape Management","Cooper Roofing","Copperstate Metals","Countertop Creations","Courier Graphics","CoxReels","CPC","Crating Technology","Crazy Horse","Creative Innervisions LLC","CrossRoad Carriers","Crossroads for Women","Crum Plumbing","CSI","DADC","Dairyland Milk","Dalmolin Excavating Inc","DCB","Defense Pest Control","Desert Fleet","Desert Sun Moving","Desperado Dairy","DHI Communities","Dine BII Association for Disabled Citizens Inc","Dirt","Division 9","DMT","Dolphinaris","Door Mill","Dr. Erin Bradley Family Medicine","Drawer Connection, Inc","Dry Force","DuBrook","Duffy Development","Dugan Calf Farm","Duncan Families Farms","EFG America","Elite Roofing Supply","Embrey","Emergency Restoration","Ennssolutions","Epifini","Esteem Children's Services","Evergreen Turf","Family Support Resources","Farm Fresh","Felix Construction","FMG","Foam Experts Roofing Inc","Fondomonte","Frontline Exterminating","Garden House","GKD Management","GPM LandScape","Grabber Power Products","Granite Basin Roofing","GreenScapes","Gryphon Roofing","Haggai","Happy Valley","Haralson Tire","Hard Rock Concrete","Harvest Power Community Development Group Inc","Hensel Phelps","Houston Trucking","Hozhoni Foundation Inc","Hualapai","Huerta Trucking","Hurricane Fence Co","Hwal'bayBaj","Imagine Architectural Concrete","Inegrety Comercial Cleaning","Inn-Apartments","Innovative Green Technologies","Insure Compliance","InterMountain West Civil Contractors","Interstate Batteries","Invader Pest","JFN Mechanical","Jicarilla Apache Nation","JLC Roofing","JMH Trucking","JPCI","Juarez Contracting","Kann Enterprises_Interstate Batteries","KC Homes","Keystone","Kingman Academy of Learning","Kinkaid Civil Construction","La Canasta","Arizona Society of Safety Engineers (ASSE)","Lakin Milling","Larson Waste","LeBaron & Carroll","Leeds West Groups","Lehi Valley Trading","Leinbach Company Management Inc","LGO","Liberty Fence & Supply, LLC","Lifetime Roof Systems Inc.","Lindel Mechanical","LMC","LoneStar Trucking","Lumberjack Timber","Lyons Roofing","M&B Mechanical","Maddy's Pools","McManus Construction","Metal Masters Mechanical","Metric Roofing","Metro Fire Equipment Inc.","Metro Phoenix PHCC","Michael Brothers","MicroBlend","Mirage Plastering","Modern Paving","Monarch","National Fire Control","NCT","Neiders Company","New folder","New Horizon Youth Homes","New Western","Norman S Wright Co Inc.","Nunez Contracting","Old Tucson","Onni Properties","Otto Transportation","OTTO Trucking","Overleys","Overson Roofing","Paramount Roofing","Paramount Supply","Patriot Disposal","Paul Johnson Drywall","Paul Rich Roofing","Penguin Air","Perco Rock","PEST","Pete King Construction","Phoenix Extermination","Phoenix Recycling","Phoenix Towing Service","Pima Air & Space Museum","Pinal Feeding","Pinal Feeding Red River","PindernationElectric","Pinnacle Restoration","Pioneer Landscape","Pioneer Roofing Co","Planetary Science Institute","Platinum Plastering","Plexus","Plumb Plumbing","PM Plumbing","Prisma","ProSource Roofing","Pueblo of Sandia","Pueblo of Zuni","Pure Landscape","PVIC","Pyramid Technologies","Quechan Tribe","R.T. Brown","Rapid Material Transport","Red Mountain","Red Mountain Rentals","Regency Towers Assocation","Rest Assured","Right Away","Rigid Industries","Rigid Industries","RKS Plumbing","RO Landscape","Robert's Tire","Roberts Tire","Rocky mountain restoration","Romona Farms","Roofing Southwest","Roofing Supply Group","Rovey Dairy","RSG Roofing Supplies","SACATE","Sage","SAGE Counseling","Saguaro Trucking","SAK Plumbing","San Tan Landscape Management","Scottsdale Livestock","SFI","Sierra Signs","Sitting Bull College","Sonoran Air","Sonoran Landesign","Southwest rock","Specialty Orthopaedics","Spectrum","Sportsman Concrete","Stapley Action Garage Door","Star Roofing Inc","Steamy Concepts","Stillwater Landscape Mgmt","Stockwell Scientific","Storage Equipment Systems Inc","Sun City CareGivers","Sun Grinding","Sun State Plumbing","Sun Valley Supply","Sundance","Sunrise Crane Services Inc","Sunshine Acres","Sunshine Residential","Sunstate Plumbing","Sunstate Sweeping","Tecta America Arizona","Teledata","The Mahoney Group","The Maid Connection","The Manning Group","Titan Pest Control","TMC Landscape","Total Waste Management","Tree Doctors","Tremco","Trinsic on Broadway","Trinsic on Indian School","UEB","United Food Bank","Univeral Piping","USI Mesa Insulation","VIP Roofing","W. R. Schulz Properties","Weigand-Omega Management","Weinberger","Western Transport Logistics Inc.","Western Utility Contractors LLC","Whitfill Nursery","Winslow Indian Health Care Center","Wolf Waste LLC","Yavapai-Apache Cliff Castle Casino Hotel","Yavapai-Apache Nation","Young Builders Roofing - A-S Urethane Systems","Marlin Mechanical","Brooks Bros Utility","Prime Pest Control","The HUB Bar and Grill","5 Guys Construction","Zion Compassion Care","Banker Insulation","Cummings Plumming","Summit Inc","Austin Centers for Exceptional Students (ACES)","Sahara Development Inc. Tucson","Nexus Pool Care","J Bar G Restaurants LLC","DAS Products, Inc","Community Medical Services","Appliance Part Company","Saguaro Foundation","Solana Outdoor Living, LLC","Ron Brock's Heating and Cooling","Summit Insurance","Cool Touch, LLC","FLP, LLC","Little Priest College","T&T Cleaning and Restoration","Mt. Graham Hospital","Winnebago Tribe","United Tribes Technical College (UTTC)","TLC Supportive Living Services of Arizona Inc.","Green Valley Hospital","Young Future Tire","New Horizon Community Care","EPCOR Water","Arizona Provider Training (APT)","Aneva Solar LLC","Allegiant Health Care and Rehabilitation","Marc Community Resources Inc.","Central Arizona Project","HJ3","Apache Nugget","Pursuit Builders","Southwest Risk","Achilles AC","Hula Hut","Revamp Roofing","Tega Industries, Inc.","Dutt Hospitality Group","Standing Rock Sioux Tribe","Anthem Pest Control","All Things Metal","Environments by Rojas","State Seal","Cullum Homes Inc","Roofing Specialist","Sault Tribe","Spartan Electric Inc.","ConnectionsAZ","Arizona Sanitation Services","Liberty Companies","Coppertree Construction","Sunstate Plumbing","Reidhead Plumbing & Solar","Apache Medical Transport","Havasu Landing Resort and Casino","Royal Wall Systems","CAM Properties","Parks and Sons of Sun City","APCON Construction Co","West Coast Roofing","Picuris Pueblo","Royal Renovation","Mescalero Tribe","Hendel's Air Conditioning","CMMV LLC","Vroom","ITC AZ","Mountain Power Electircal","Sunrise Park Resort","South Eastern Arizona Behavioral Health","Proof. Pest Control","Caldwell Construction"],
       country: "United States",
       topic: "",
-      isHidden : true,
+      sameLocAsTraining: false,
+      validCompanyName: false,
       validPhone: false,
+      validEmail: false,
+      validCell: false,
+      validZip: false,
       contactPhone: 1,
-      form :{
-        price:100,
-        quantity:2,
-        totalPrice:200
-      },
-      validations:{
-        price:["totalPrice"],
-        quantity: [this.required,this.lessThanValue(100)],
-        totalPrice:[this.greaterThanField("price")]
-      },
+      contactCell: 1,
+      contactEmail: "",
+      zip: "",
+      active: true,
       error:{}
     };
+    this.validateEmail = this.validateEmail.bind(this);
+    this.validatePhone = this.validatePhone.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.printDocument = this.printDocument.bind(this);
-    this.handleTraining = this.handleTraining.bind(this);
+    this.validateZIP = this.validateZIP.bind(this);
+    this.makeVisible = this.makeVisible.bind(this);
+    this.handleCompanyName = this.handleCompanyName.bind(this);
   }
+
+  // componentDidMount = () => {
+  //   document.getElementById("training").style.display = 'none';
+  // }
 
   toggle() {
     this.setState({
@@ -78,35 +90,58 @@ export default class Example extends React.Component {
     });
   }
 
-  handleTraining = () => {
-    
-    if(this.state.topic !== "training"){
+  handleCompanyName  = () => {
+    if (this.state.companyName.length < 2){
       this.setState({
-        isHidden: false
+        validCompanyName: false
       });
     }
     else{
       this.setState({
-        isHidden: true
+        validCompanyName: true
       });
     }
   }
-// this.setState({validPhone: res.valid})
+
   validatePhone = () => {
     API.numAPI(this.state.contactPhone)
-    .then(function(res) {
-      console.log(res);
-      this.setState({validPhone: res.valid})
-      console.log(this.state.validPhone)
+    .then((res) => {
+      this.setState({validPhone: res.data.valid});
+      // console.log(this.state.validPhone)
     })
     .catch(err => console.log(err));
+
+    API.numAPI(this.state.contactCell)
+    .then((res) => {
+      this.setState({validCell: res.data.valid});
+      // console.log(this.state.validPhone)
+    })
+    .catch(err => console.log(err));
+  }
+
+  validateEmail = () => {
+    API.emailAPI(this.state.contactEmail)
+    .then((res) => {
+      this.setState({validEmail: res.data.smtp_check})
+      // console.log(this.state.validEmail)
+    })
+    .catch(err => console.log(err));
+  }
+
+  validateZIP = () => {
+    let zipRegex = RegExp('^[0-9]{5}(?:-[0-9]{4})?$');
+    // console.log(this.state.zip);
+    this.setState({
+      validZip: zipRegex.test(this.state.zip)
+    });
+    // console.log(this.state.validZip);
   }
 
   handleChange(date) {
     this.setState({
       startDate: date
     });
-    console.log(this.state.startDate);
+    // console.log(this.state.startDate);
   }
 
   handleSubmit = e => {
@@ -114,7 +149,8 @@ export default class Example extends React.Component {
     this.setState({
       companyNames: this.state.companyNames.concat(this.state.companyName)
     });
-    this.validatePhone();
+    console.log(this.state);
+    
   }
 
   handleInputChange = e => {
@@ -122,6 +158,23 @@ export default class Example extends React.Component {
     this.setState({
       [name]: value
     });
+    this.validatePhone();
+    this.validateEmail();
+    this.validateZIP();
+    this.handleCompanyName();
+    this.setState({
+      active: ((this.state.validCell !== "undefined" && this.state.validCell !== false) || (this.state.validEmail !== "undefined" && this.state.validEmail !== false) || (this.state.validPhone !== "undefined" && this.state.validPhone !== false)) && this.state.validZip && this.state.validCompanyName
+    });
+
+  }
+
+  makeVisible = () => {
+    if(this.state.topic !== 'Training'){
+      document.getElementById("training").style.display = 'none';
+    }
+    else{
+      document.getElementById("training").style.display = 'block';
+    }
   }
 
   printDocument = () => {
@@ -219,7 +272,7 @@ export default class Example extends React.Component {
             <Label for="companyName">Company Name</Label>
             <Input type="select" name="companyName" id="companyNameSelect" onChange={this.handleInputChange}>
                 {this.state.companyNames.length === 0 ? 
-                <option>...</option> :
+                <option name="companyName" value="">...</option> :
                 this.state.companyNames.map(option => 
                 <option>{option}</option>
                 )
@@ -241,7 +294,6 @@ export default class Example extends React.Component {
                 onChange={this.handleChange}
                 name="startDate"
                 placeholder="Enter date of request"
-                onChange={this.handleInputChange}
               />
             </FormGroup>
             <FormGroup>
@@ -249,27 +301,42 @@ export default class Example extends React.Component {
                 Who is paying for Training?
               </Label>
               <Input type="select" name="paymentForTraining" id="paymentForTraining" onChange={this.handleInputChange}>
-                <option>Producer</option>
-                <option>Contract</option>
-                <option>Direct Sale</option>
-                <option>ARCA</option>
+                <option name="paymentForTraining" value={""}>...</option>
+                <option name="paymentForTraining" value={"Producer"}>Producer</option>
+                <option name="paymentForTraining" value={"Contract"}>Contract</option>
+                <option name="paymentForTraining" value={"Direct Sale"}>Direct Sale</option>
+                <option name="paymentForTraining" value={"ARCA"}>ARCA</option>
               </Input>
             </FormGroup>
-            
-            {/* <Service select="1" email="anuhya@test.com" radio1={true}/> */}
-            {/* Address of training : Street address (required), ZIP (validate later), City (required), State, Country (required field) (default United States)     */}
 
               <FormGroup>
               <Label for="topic">Topic</Label>
               <Input type="select" name="topic" id="topic" onChange={this.handleInputChange}>
-                <option name="topic" value={"1"} onClick={this.handleTraining}>1</option>
-                <option name="topic" value={"2"} onClick={this.handleTraining}>2</option>
-                <option name="topic" value={"3"} onClick={this.handleTraining}>3</option>
-                <option name="topic" value={"Training"} onClick={this.handleTraining}>Training</option>
+                <option name="topic" value={""}>...</option>
+                <option name="topic" value={"Training"}>Training</option>
+                <option name="topic" value={"1"}>1</option>
+                <option name="topic" value={"2"}>2</option>
+                <option name="topic" value={"3"}>3</option>
+                <option name="topic" value={"Other"}>Other</option>
               </Input>
             </FormGroup>
+                
+            {
+            this.state.topic === "Other" ? (
+              <FormGroup>
+              <Label for="topic">Enter new topic</Label>
+              <Input
+                type="text"
+                name="topic"
+                id="topic"
+                placeholder="Enter new topic"
+                onChange={this.handleInputChange}
+              />
+              </FormGroup>
+            ) : ""
+            }
 
-            {!this.state.isHidden ? (<FormGroup className = "training">
+            {this.state.topic === "Training" ? (<FormGroup className = "training" id= "training">
               <Label for="address">Address of Training</Label><br />
               <Label for="streetAddress">Street Address</Label>
               <Input
@@ -295,7 +362,6 @@ export default class Example extends React.Component {
               <Label for="state">State</Label>
               <Input type="select" name="state" id="state" onChange={this.handleInputChange}>
                 <option>Arizona</option>
-                {console.log(cities[this.state.country])}
                 {Object.keys(cities[this.state.country]).map(city => <option>{cities[this.state.country][city]}</option>)}
               </Input>
               <Label for="city">City</Label>
@@ -310,9 +376,10 @@ export default class Example extends React.Component {
             <FormGroup>
               <Label for="langOfTraining">Language of training</Label>
               <Input type="select" name="langTraining" id="langTraining" onChange={this.handleInputChange}>
-                <option>English</option>
-                <option>Spanish</option>
-                <option>Bilingual</option>
+                <option name="langTraining" value="">...</option>
+                <option name="langTraining" value="English">English</option>
+                <option name="langTraining" value="Spanish">Spanish</option>
+                <option name="langTraining" value="Bilingual">Bilingual</option>
               </Input>
             </FormGroup>
             <FormGroup> 
@@ -351,7 +418,7 @@ export default class Example extends React.Component {
                 type="email"
                 name="contactEmail"
                 id="contactEmail"
-                placeholder="Enter the email of the contact"
+                placeholder="Valid email format example@test.com"
                 onChange={this.handleInputChange}
               />
             </FormGroup>
@@ -361,7 +428,7 @@ export default class Example extends React.Component {
                 type="text"
                 name="contactPhone"
                 id="contactPhone"
-                placeholder="Valid phone format <countrycode>xxxxxxxxx"
+                placeholder="Valid phone format example 1999999999"
                 onChange = {this.handleInputChange}
               />
             </FormGroup>
@@ -377,6 +444,63 @@ export default class Example extends React.Component {
                 onChange={this.handleInputChange}
               />
             </FormGroup>
+
+        
+              <div>
+              {(this.state.topic === "Training") ? 
+              <div>
+              <Label for="sameLocAsTraining">Same Location as Training? </Label>
+              <CustomInput
+                type="checkbox"
+                id="cb-1"
+                checked={this.state.sameLocAsTraining}
+                onChange={e => this.setState({ checked: !this.state.sameLocAsTraining })}
+                defaultChecked={true}
+              />
+              </div>
+               : ""}
+              <br/>
+              <FormGroup className = "training" id= "training">
+              <Label for="address">Address of Training</Label><br />
+              <Label for="streetAddress">Street Address</Label>
+              <Input
+                type="text"
+                name="streetAddress"
+                id="streetAddress"
+                placeholder="Street Address"
+                onChange={this.handleInputChange}
+              />
+              <Label for="zip">ZIP</Label>
+              <Input
+                type="text"
+                name="zip"
+                id="zip"
+                placeholder="ZIP"
+                onChange={this.handleInputChange}
+              />
+              <Label for="country">Country</Label>
+              <Input type="select" name="country" id="country" onChange={this.handleInputChange}>
+                <option>United States</option>
+                {Object.keys(cities).map(country => <option>{country}</option>)}
+              </Input>
+              <Label for="state">State</Label>
+              <Input type="select" name="state" id="state" onChange={this.handleInputChange}>
+                <option>Arizona</option>
+                {Object.keys(cities[this.state.country]).map(city => <option>{cities[this.state.country][city]}</option>)}
+              </Input>
+              <Label for="city">City</Label>
+              <Input
+                type="text"
+                name="city"
+                id="city"
+                placeholder="Enter City"
+                onChange={this.handleInputChange}
+              />
+            </FormGroup>
+              </div>
+        
+        
+
             <FormGroup>
               <Label for="instructions">
                 Provide instructions to service provider
@@ -384,7 +508,7 @@ export default class Example extends React.Component {
               <Input type="textarea" name="instructions" id="instructions" onChange={this.handleInputChange} />
             </FormGroup>
 
-            <Button onClick={this.handleSubmit}>Submit</Button>
+            <Button name = "active" onClick={this.handleSubmit} disabled={this.state.active}>Submit</Button>
           </Form>
 
           <div>
@@ -412,28 +536,6 @@ export default class Example extends React.Component {
   }
 }
 
-      // <div className="App">
-      //   <form>
-      //   <div className="input-field">
-      //     <label htmlFor="Price">Price</label>
-      //     <input type="number" name="Price" value={this.state.price}
-      //       onChange={(e)=> this.handleChange(e,"price")}/>
-      //       <span className="error-message">{this.state.error.price}</span>
-      //   </div>
-      //   <div className="input-field">
-      //     <label htmlFor="Quantity">Quantity</label>
-      //     <input type="number" name="Quantity" value={this.state.quantity}
-      //       onChange={(e)=> this.handleChange(e,"quantity")}/>
-      //       <span className="error-message">{this.state.error.quantity}</span>
-      //   </div>
-      //   <div className="input-field">
-      //       <label htmlFor="Total Price">Total Price</label>
-      //       <input type="number" name="Total Price" value={this.state.totalPrice}
-      //       onChange={(e)=> this.handleChange(e,"totalPrice")}/>
-      //       <span className="error-message">{this.state.error.totalPrice}</span>
-      //   </div>
-      //   </form>
-      // </div>
     
   
 
