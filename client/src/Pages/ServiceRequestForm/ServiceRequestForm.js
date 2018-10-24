@@ -15,12 +15,9 @@ import {
 } from "reactstrap";
 
 /*Imports required for Form Group */
-import { Button, Form, FormGroup, Label, Input, CustomInput } from "reactstrap";
+import { Button, Form, FormGroup, Label, Input, CustomInput, Alert  } from "reactstrap";
 import { Container } from "reactstrap";
 import "./style.css";
-
-/*Import checkbox from components*/
-import Checkbox from "../../Components/Checkbox/index";
 
 /*Imports required for React Calendar */
 import DatePicker from "react-datepicker";
@@ -28,23 +25,17 @@ import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
 
 /*Imports required for input validation */
-import { Textbox } from 'react-inputs-validation';
 import 'react-inputs-validation/lib/react-inputs-validation.min.css';
-import validator from 'validator';
 
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import {Base64} from "js-base64";
 
-import { Table } from 'reactstrap';
 import cities from "../../utils/cities.json";
 import API from "../../utils/API";
 
-let styles = {
-  'Address' : {
-    'display' : 'none'
-  }
-}
+const messageCorrect = "Excellent!"
+const messageIncorrect = "This field is incorrect. Please rewrite it in the given format."
+const messageWarning = "This is not a mandatory field. Please choose an option or rewrite the field in the given format."
 
 export default class Example extends React.Component {
   constructor(props) {
@@ -61,22 +52,30 @@ export default class Example extends React.Component {
       validPhone: false,
       validEmail: false,
       validCell: false,
-      validZip: false,
+      validZIP: false,
       contactPhone: 1,
       contactCell: 1,
       contactEmail: "",
+      state: "",
+      streetAddress: "",
+      city: "",
       zip: "",
+      contactStreetAddress : "",
+      contactZip : "",
+      contactCountry: "United States",
+      contactState: "",
+      contactCity: "",
       active: true,
       error:{}
     };
     this.validateEmail = this.validateEmail.bind(this);
     this.validatePhone = this.validatePhone.bind(this);
+    this.validateCellPhone = this.validateCellPhone.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.printDocument = this.printDocument.bind(this);
     this.validateZIP = this.validateZIP.bind(this);
-    this.makeVisible = this.makeVisible.bind(this);
     this.handleCompanyName = this.handleCompanyName.bind(this);
   }
 
@@ -111,6 +110,9 @@ export default class Example extends React.Component {
     })
     .catch(err => console.log(err));
 
+  }
+
+  validateCellPhone = () => {
     API.numAPI(this.state.contactCell)
     .then((res) => {
       this.setState({validCell: res.data.valid});
@@ -132,7 +134,7 @@ export default class Example extends React.Component {
     let zipRegex = RegExp('^[0-9]{5}(?:-[0-9]{4})?$');
     // console.log(this.state.zip);
     this.setState({
-      validZip: zipRegex.test(this.state.zip)
+      validZIP: zipRegex.test(this.state.zip)
     });
     // console.log(this.state.validZip);
   }
@@ -163,18 +165,9 @@ export default class Example extends React.Component {
     this.validateZIP();
     this.handleCompanyName();
     this.setState({
-      active: ((this.state.validCell !== "undefined" && this.state.validCell !== false) || (this.state.validEmail !== "undefined" && this.state.validEmail !== false) || (this.state.validPhone !== "undefined" && this.state.validPhone !== false)) && this.state.validZip && this.state.validCompanyName
+      active: ((this.state.validCell !== "undefined" && this.state.validCell !== false) || (this.state.validEmail !== "undefined" && this.state.validEmail !== false) || (this.state.validPhone !== "undefined" && this.state.validPhone !== false)) && this.state.validZIP && this.state.validCompanyName
     });
 
-  }
-
-  makeVisible = () => {
-    if(this.state.topic !== 'Training'){
-      document.getElementById("training").style.display = 'none';
-    }
-    else{
-      document.getElementById("training").style.display = 'block';
-    }
   }
 
   printDocument = () => {
@@ -270,7 +263,7 @@ export default class Example extends React.Component {
           <Form>
             <FormGroup>
             <Label for="companyName">Company Name</Label>
-            <Input type="select" name="companyName" id="companyNameSelect" onChange={this.handleInputChange}>
+            <Input type="select" name="companyName" id="companyNameSelect" onChange={this.handleInputChange} onClick={this.handleCompanyName}>
                 {this.state.companyNames.length === 0 ? 
                 <option name="companyName" value="">...</option> :
                 this.state.companyNames.map(option => 
@@ -286,6 +279,7 @@ export default class Example extends React.Component {
                 placeholder="Enter the name of the company"
                 onChange={this.handleInputChange}
               />
+              <Alert color={(this.state.validCompanyName) ? "success" : "danger"}>{(this.state.validCompanyName) ? messageCorrect : messageIncorrect}</Alert>
             </FormGroup>
             <FormGroup>
               <Label for="dateOfRequest">Date of Request</Label>
@@ -307,6 +301,7 @@ export default class Example extends React.Component {
                 <option name="paymentForTraining" value={"Direct Sale"}>Direct Sale</option>
                 <option name="paymentForTraining" value={"ARCA"}>ARCA</option>
               </Input>
+              <Alert color={(this.state.paymentForTraining) !== "" ? "light" : "warning"}>{(this.state.paymentForTraining) !== "" ? "" : messageWarning}</Alert>
             </FormGroup>
 
               <FormGroup>
@@ -319,6 +314,7 @@ export default class Example extends React.Component {
                 <option name="topic" value={"3"}>3</option>
                 <option name="topic" value={"Other"}>Other</option>
               </Input>
+              <Alert color={(this.state.topic.length) > 0 ? "success" : "danger"}>{(this.state.topic.length) > 0 ? messageCorrect : messageIncorrect}</Alert>
             </FormGroup>
                 
             {
@@ -332,6 +328,7 @@ export default class Example extends React.Component {
                 placeholder="Enter new topic"
                 onChange={this.handleInputChange}
               />
+              <Alert color={(this.state.topic.length) > 0 ? "success" : "danger"}>{(this.state.topic.length) > 0 ? messageCorrect : messageIncorrect}</Alert>
               </FormGroup>
             ) : ""
             }
@@ -354,6 +351,7 @@ export default class Example extends React.Component {
                 placeholder="ZIP"
                 onChange={this.handleInputChange}
               />
+              <Alert color={(this.state.validZIP) > 0 ? "success" : "danger"}>{(this.state.validZIP) ? messageCorrect : messageIncorrect}</Alert>
               <Label for="country">Country</Label>
               <Input type="select" name="country" id="country" onChange={this.handleInputChange}>
                 <option>United States</option>
@@ -421,6 +419,7 @@ export default class Example extends React.Component {
                 placeholder="Valid email format example@test.com"
                 onChange={this.handleInputChange}
               />
+              <Alert color={(this.state.validEmail) ? "success" : "danger"}>{(this.state.validEmail) ? messageCorrect : messageIncorrect}</Alert>
             </FormGroup>
             <FormGroup>
               <Label for="contactPhone">Contact Person's Contact Number</Label><br />
@@ -431,6 +430,7 @@ export default class Example extends React.Component {
                 placeholder="Valid phone format example 1999999999"
                 onChange = {this.handleInputChange}
               />
+              <Alert color={(this.state.validPhone) ? "success" : "danger"}>{(this.state.validPhone) ? messageCorrect : messageIncorrect}</Alert>
             </FormGroup>
             <FormGroup>
               <Label for="contactCell">
@@ -443,6 +443,7 @@ export default class Example extends React.Component {
                 placeholder="Enter the cell number of the contact"
                 onChange={this.handleInputChange}
               />
+              <Alert color={(this.state.validCellPhone) ? "success" : "danger"}>{(this.state.validCellPhone) ? messageCorrect : messageIncorrect}</Alert>
             </FormGroup>
 
         
@@ -455,48 +456,62 @@ export default class Example extends React.Component {
                 id="cb-1"
                 checked={this.state.sameLocAsTraining}
                 onChange={e => this.setState({ checked: !this.state.sameLocAsTraining })}
-                defaultChecked={true}
               />
+              <input type="checkbox" id="check" name="sameLocAsTraining" value={this.state.sameLocAsTraining} checked = {this.state.sameLocAsTraining} onChange={this.handleInputChange} onClick={e => {this.setState({sameLocAsTraining: !this.state.sameLocAsTraining})
+              if (this.state.sameLocAsTraining){
+                this.setState(
+                  {
+                    contactStreetAddress : this.state.streetAddress,
+                    contactZip : this.state.zip,
+                    contactCountry: this.state.country,
+                    contactState: this.state.state,
+                    contactCity: this.state.city
+                  }
+                )
+              }
+              }}/>
               </div>
                : ""}
               <br/>
-              <FormGroup className = "training" id= "training">
-              <Label for="address">Address of Training</Label><br />
+              {this.state.sameLocAsTraining ? "" :
+              (<FormGroup className = "training" id= "training">
+              <Label for="address">Contact Address</Label><br />
               <Label for="streetAddress">Street Address</Label>
               <Input
                 type="text"
-                name="streetAddress"
-                id="streetAddress"
+                name="contactStreetAddress"
+                id="contactStreetAddress"
                 placeholder="Street Address"
                 onChange={this.handleInputChange}
               />
-              <Label for="zip">ZIP</Label>
+              <Label for="contactZip">ZIP</Label>
               <Input
                 type="text"
-                name="zip"
-                id="zip"
-                placeholder="ZIP"
+                name="contactZip"
+                id="contactZip"
+                placeholder="ZIP code"
                 onChange={this.handleInputChange}
               />
-              <Label for="country">Country</Label>
-              <Input type="select" name="country" id="country" onChange={this.handleInputChange}>
+              <Label for="contactCountry">Country</Label>
+              <Input type="select" name="contactCountry" id="contactCountry" onChange={this.handleInputChange}>
                 <option>United States</option>
                 {Object.keys(cities).map(country => <option>{country}</option>)}
               </Input>
-              <Label for="state">State</Label>
-              <Input type="select" name="state" id="state" onChange={this.handleInputChange}>
+              <Label for="contactState">State</Label>
+              <Input type="select" name="contactState" id="contactState" onChange={this.handleInputChange}>
                 <option>Arizona</option>
                 {Object.keys(cities[this.state.country]).map(city => <option>{cities[this.state.country][city]}</option>)}
               </Input>
-              <Label for="city">City</Label>
+              <Label for="contactCity">City</Label>
               <Input
                 type="text"
-                name="city"
-                id="city"
+                name="contactCity"
+                id="contactCity"
                 placeholder="Enter City"
                 onChange={this.handleInputChange}
               />
-            </FormGroup>
+            </FormGroup>)
+          }
               </div>
         
         
@@ -512,31 +527,26 @@ export default class Example extends React.Component {
           </Form>
 
           <div>
-      <div className="mb5">
-      <br />
-        <Button onClick={this.printDocument}>Print</Button>
-      </div>
-      <div id="divToPrint" className="mt4">
-        {/* <div>Note: Here the dimensions of div are same as A4</div> 
-        <div>You Can add any component here</div> */}
+          <div className="mb5">
+          <br />
+            <Button onClick={this.printDocument}>Print</Button>
+          </div>
+          <div id="divToPrint" className="mt4">
+            {/* <div>Note: Here the dimensions of div are same as A4</div> 
+            <div>You Can add any component here</div> */}
 
-        <img src = "logo.png" alt="Insure Compliance Logo" />
-        Insure Compliance <br />
-        Invoice
-        <br/>
-        <p>Dates of Availability Clients: {this.state.startDate===undefined ? this.state.startDate : new Date().getMonth() + "/" + new Date().getDate() + "/" + new Date().getFullYear()}</p>
-        <p>Training Location: {this.state.trainingAddress === "" ?  this.state.trainingAddress : ""}</p>
-        <p>Equipment available at training site: N/A</p>
-        <p>Equipment needed for training: N/A</p>
-      </div>
-    </div>
+            <img src = "logo.png" alt="Insure Compliance Logo" />
+            Insure Compliance <br />
+            Invoice
+            <br/>
+            <p>Dates of Availability Clients: {this.state.startDate===undefined ? this.state.startDate : new Date().getMonth() + "/" + new Date().getDate() + "/" + new Date().getFullYear()}</p>
+            <p>Training Location: {this.state.trainingAddress === "" ?  this.state.trainingAddress : ""}</p>
+            <p>Equipment available at training site: N/A</p>
+            <p>Equipment needed for training: N/A</p>
+          </div>
+        </div>
         </Container>
       </div>
     );
   }
 }
-
-    
-  
-
-
