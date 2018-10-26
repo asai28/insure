@@ -7,7 +7,9 @@ export default{
     },
 
     emailAPI : function(email){
-        return axios.get("http://apilayer.net/api/check?access_key=aa06daf29898cea7aee1acdd9a0b6fac&smtp=1&format=1&email=" + email)
+        // return axios.get("http://apilayer.net/api/check?access_key=aa06daf29898cea7aee1acdd9a0b6fac&smtp=1&format=1&email=" + email)
+        //return axios.get("http://api.fullcontact.com/v2/verification/email?apiKey=2iSOaMrWNcIbufyyttheQnxYlsWZb6cZ&email="+email)
+        return axios.get(`https://api.trumail.io/v2/lookups/json?email=${email}`)
     },
 
     companyAPI : function(company){
@@ -15,5 +17,4 @@ export default{
     }
 }
 
-
-//2iSOaMrWNcIbufyyttheQnxYlsWZb6cZ - API key for company API
+//https://cors-anywhere.herokuapp.com/

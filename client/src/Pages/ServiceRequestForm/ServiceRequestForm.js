@@ -24,6 +24,8 @@ import DatePicker from "react-datepicker";
 import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
 
+import { FaPlus } from 'react-icons/fa';
+
 /*Imports required for input validation */
 import 'react-inputs-validation/lib/react-inputs-validation.min.css';
 
@@ -36,6 +38,12 @@ import API from "../../utils/API";
 const messageCorrect = "Excellent!"
 const messageIncorrect = "This field is incorrect. Please rewrite it in the given format."
 const messageWarning = "This is not a mandatory field. Please choose an option or rewrite the field in the given format."
+
+const styles = {
+  'FaPlus' : {
+    'fontColor' : '#00FF00'
+  }
+}
 
 export default class Example extends React.Component {
   constructor(props) {
@@ -51,10 +59,10 @@ export default class Example extends React.Component {
       validCompanyName: false,
       validPhone: false,
       validEmail: false,
-      validCell: false,
+      validCellPhone: false,
       validZIP: false,
       contactPhone: 1,
-      contactCell: 1,
+      contactCellPhone: 1,
       contactEmail: "",
       state: "",
       streetAddress: "",
@@ -65,7 +73,12 @@ export default class Example extends React.Component {
       contactCountry: "United States",
       contactState: "",
       contactCity: "",
+      equipmentsForSite: ["Laptop", "Projector Screen", "TV monitor", "Table", "electrical power socket with extension cord"],
+      equipmentsSelectedSite: [],
+      equipmentsSelectedTraining: [],
+      equipmentsForTraining : ["Laptop", "Projector Screen", "TV monitor", "Table", "Electrical power socket with extension cord", "Forklift training kit", "CPR mannequins", "First aid training bag", "AED training device", "Handouts"],
       active: true,
+      addOn: "",
       error:{}
     };
     this.validateEmail = this.validateEmail.bind(this);
@@ -89,6 +102,7 @@ export default class Example extends React.Component {
     });
   }
 
+
   handleCompanyName  = () => {
     if (this.state.companyName.length < 2){
       this.setState({
@@ -102,32 +116,47 @@ export default class Example extends React.Component {
     }
   }
 
-  validatePhone = () => {
-    API.numAPI(this.state.contactPhone)
-    .then((res) => {
-      this.setState({validPhone: res.data.valid});
-      // console.log(this.state.validPhone)
-    })
-    .catch(err => console.log(err));
 
+  validatePhone = () => {
+    var re = RegExp(/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
+    // API.numAPI(this.state.contactPhone)
+    // .then((res) => {
+    //   this.setState({validPhone: res.data.valid});
+    //   // console.log(this.state.validPhone)
+    // })
+    // .catch(err => console.log(err));
+    //var re = RegExp(^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$);
+    // this.setState({
+    //   validPhone: 
+    // })
+    this.setState({
+      validPhone: re.test(this.state.contactPhone)
+    });
+  
   }
 
   validateCellPhone = () => {
-    API.numAPI(this.state.contactCell)
-    .then((res) => {
-      this.setState({validCell: res.data.valid});
-      // console.log(this.state.validPhone)
-    })
-    .catch(err => console.log(err));
+    var re = RegExp(/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
+    this.setState({
+      validCellPhone: re.test(this.state.contactCellPhone)
+    });
+    // API.numAPI(this.state.contactCellPhone)
+    // .then((res) => {
+    //   this.setState({validCellPhone: res.data.valid});
+    //   // console.log(this.state.validPhone)
+    // })
+    // .catch(err => console.log(err));
   }
 
   validateEmail = () => {
-    API.emailAPI(this.state.contactEmail)
-    .then((res) => {
-      this.setState({validEmail: res.data.smtp_check})
-      // console.log(this.state.validEmail)
-    })
-    .catch(err => console.log(err));
+    var re = RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+      
+      API.emailAPI(this.state.contactEmail)
+      .then((res) => {
+        this.setState({validEmail: re.test(String(this.state.contactEmail).toLowerCase())})
+      })
+      .catch(err => console.log(err));
+    
   }
 
   validateZIP = () => {
@@ -143,6 +172,7 @@ export default class Example extends React.Component {
     this.setState({
       startDate: date
     });
+    
     // console.log(this.state.startDate);
   }
 
@@ -151,7 +181,14 @@ export default class Example extends React.Component {
     this.setState({
       companyNames: this.state.companyNames.concat(this.state.companyName)
     });
-    console.log(this.state);
+    this.setState({
+      active: ((this.state.validCellPhone !== "undefined" && this.state.validCellPhone !== false) || (this.state.validEmail !== "undefined" && this.state.validEmail !== false) || (this.state.validPhone !== "undefined" && this.state.validPhone !== false)) && this.state.validZIP && this.state.validCompanyName
+    }, () => {
+      this.validatePhone();
+      this.validateEmail();
+      this.validateCellPhone();
+      console.log(this.state);     
+    });
     
   }
 
@@ -160,14 +197,11 @@ export default class Example extends React.Component {
     this.setState({
       [name]: value
     });
-    this.validatePhone();
     this.validateEmail();
     this.validateZIP();
+    this.validatePhone();
+    this.validateCellPhone();
     this.handleCompanyName();
-    this.setState({
-      active: ((this.state.validCell !== "undefined" && this.state.validCell !== false) || (this.state.validEmail !== "undefined" && this.state.validEmail !== false) || (this.state.validPhone !== "undefined" && this.state.validPhone !== false)) && this.state.validZIP && this.state.validCompanyName
-    });
-
   }
 
   printDocument = () => {
@@ -199,29 +233,6 @@ export default class Example extends React.Component {
         pdf.save("download.pdf");
       })
     ;
-  }
-
-  required = fieldValue => fieldValue ? undefined : "Please enter a value";
-  lessThanValue = value => fieldValue => fieldValue < value ? undefined : `Value must be less than ${value}`;
-  greaterThanField = (fieldName) => (fieldValue,state) =>
-  fieldValue > state[fieldName] ? undefined : `Value must be greater that ${fieldName}`;
-
-  validateField = (fieldName,fieldValue) =>{
-    let errorMessage;
-    this.state.validations[fieldName].forEach( (validation)=>{
-      if(typeof validation==="function"){
-        errorMessage = validation(fieldValue,this.state.form);
-          this.setState({
-            error:{
-              ...this.state.error,
-              [fieldName]:errorMessage
-            }
-          })
-          if(errorMessage){return}
-      }else{
-        this.validateField(validation,this.state.form[validation]);
-      }
-    });
   }
 
   render() {
@@ -438,8 +449,8 @@ export default class Example extends React.Component {
               </Label>
               <Input
                 type="text"
-                name="contactCell"
-                id="contactCell"
+                name="contactCellPhone"
+                id="contactCellPhone"
                 placeholder="Enter the cell number of the contact"
                 onChange={this.handleInputChange}
               />
@@ -512,6 +523,47 @@ export default class Example extends React.Component {
               />
             </FormGroup>)
           }
+            <FormGroup>
+            <b>Use Ctrl + Click to select multiple items</b><br />
+            <Label for="equipmentForSite">Equipment needed for site</Label>
+            <Input type="select" name="equipmentForSite" id="equipmentForSite" multiple>
+              {this.state.equipmentsForSite.map(x => <option value={x} onClick = {() => {
+                if(this.state.equipmentsSelectedTraining.indexOf(x) !== -1){
+                  this.setState({
+                    equipmentsSelectedSite: this.state.equipmentsSelectedSite.concat(x)
+                  });
+                }
+                else{
+                  this.setState({
+                    equipmentsSelectedSite: this.state.equipmentsSelectedSite.splice( this.state.equipmentsSelectedSite.indexOf(x), 1)
+                  });
+                }
+              }}>{x}</option>)}
+            </Input>
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="equipmentForTraining">Equipment needed for training</Label>
+            <Input type="select" name="equipmentForTraining" id="equipmentForTraining" multiple>
+              {this.state.equipmentsForTraining.map(x => <option value={x} onClick={() => {
+                console.log(this.state.equipmentsSelectedTraining.indexOf(x) === -1)
+                if(this.state.equipmentsSelectedTraining.indexOf(x) === -1){
+                  this.setState({
+                    equipmentsSelectedTraining: this.state.equipmentsSelectedTraining.concat(x)
+                  });
+                  console.log(this.state.equipmentsSelectedSite)
+                }
+                else{
+                  this.setState({
+                    equipmentsSelectedTraining: this.state.equipmentsSelectedTraining.splice( this.state.equipmentsSelectedTraining.indexOf(x), 1)
+                  });
+                }
+              }}>{x}</option>)}
+            </Input>
+            <Label for="additionalEquipment">Need additional equipment? Add it here</Label>
+            <Input type = "text" name = "addOn" id= "addOn" value={this.state.addOn} onChange = {this.handleInputChange}/>
+            <div style={styles.FaPlus}><FaPlus onClick = {() => {if(this.state.addOn.trim() !== ""){this.setState({equipmentsForTraining: this.state.equipmentsForTraining.concat(this.state.addOn)})}}}/> </div>
+          </FormGroup>
               </div>
         
         
@@ -548,5 +600,6 @@ export default class Example extends React.Component {
         </Container>
       </div>
     );
+    {/* Training checkboxes, give chance to add new checkboxes */}
   }
 }
