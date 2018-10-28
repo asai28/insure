@@ -15,7 +15,7 @@ import {
 } from "reactstrap";
 
 /*Imports required for Form Group */
-import { Button, Form, FormGroup, Label, Input, CustomInput, Alert  } from "reactstrap";
+import { Button, Form, FormGroup, Label, Input, CustomInput } from "reactstrap";
 import { Container } from "reactstrap";
 import "./style.css";
 
@@ -24,7 +24,7 @@ import DatePicker from "react-datepicker";
 import moment from "moment";
 import "react-datepicker/dist/react-datepicker.css";
 
-import { FaPlus } from 'react-icons/fa';
+import { FaPlus, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
 /*Imports required for input validation */
 import 'react-inputs-validation/lib/react-inputs-validation.min.css';
@@ -33,16 +33,20 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 import cities from "../../utils/cities.json";
-import API from "../../utils/API";
 
-const messageCorrect = "Excellent!"
-const messageIncorrect = "This field is incorrect. Please rewrite it in the given format."
-const messageWarning = "This is not a mandatory field. Please choose an option or rewrite the field in the given format."
+import API from "../../utils/API";
 
 const styles = {
   'FaPlus' : {
-    'fontColor' : '#00FF00'
+    'color' : '#339933'
+  },
+  'FaCheck': {
+    'color' : '#339933'
+  },
+  'FaTimes' : {
+    'color' : "#cc3300"
   }
+
 }
 
 export default class Example extends React.Component {
@@ -92,10 +96,6 @@ export default class Example extends React.Component {
     this.handleCompanyName = this.handleCompanyName.bind(this);
   }
 
-  // componentDidMount = () => {
-  //   document.getElementById("training").style.display = 'none';
-  // }
-
   toggle() {
     this.setState({
       isOpen: !this.state.isOpen
@@ -119,16 +119,6 @@ export default class Example extends React.Component {
 
   validatePhone = () => {
     var re = RegExp(/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
-    // API.numAPI(this.state.contactPhone)
-    // .then((res) => {
-    //   this.setState({validPhone: res.data.valid});
-    //   // console.log(this.state.validPhone)
-    // })
-    // .catch(err => console.log(err));
-    //var re = RegExp(^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$);
-    // this.setState({
-    //   validPhone: 
-    // })
     this.setState({
       validPhone: re.test(this.state.contactPhone)
     });
@@ -140,40 +130,24 @@ export default class Example extends React.Component {
     this.setState({
       validCellPhone: re.test(this.state.contactCellPhone)
     });
-    // API.numAPI(this.state.contactCellPhone)
-    // .then((res) => {
-    //   this.setState({validCellPhone: res.data.valid});
-    //   // console.log(this.state.validPhone)
-    // })
-    // .catch(err => console.log(err));
   }
 
   validateEmail = () => {
     var re = RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
-      
-      API.emailAPI(this.state.contactEmail)
-      .then((res) => {
-        this.setState({validEmail: re.test(String(this.state.contactEmail).toLowerCase())})
-      })
-      .catch(err => console.log(err));
-    
+    this.setState({validEmail: re.test(String(this.state.contactEmail).toLowerCase())});
   }
 
   validateZIP = () => {
     let zipRegex = RegExp('^[0-9]{5}(?:-[0-9]{4})?$');
-    // console.log(this.state.zip);
     this.setState({
       validZIP: zipRegex.test(this.state.zip)
     });
-    // console.log(this.state.validZip);
   }
 
   handleChange(date) {
     this.setState({
       startDate: date
     });
-    
-    // console.log(this.state.startDate);
   }
 
   handleSubmit = e => {
@@ -181,14 +155,27 @@ export default class Example extends React.Component {
     this.setState({
       companyNames: this.state.companyNames.concat(this.state.companyName)
     });
-    this.setState({
-      active: ((this.state.validCellPhone !== "undefined" && this.state.validCellPhone !== false) || (this.state.validEmail !== "undefined" && this.state.validEmail !== false) || (this.state.validPhone !== "undefined" && this.state.validPhone !== false)) && this.state.validZIP && this.state.validCompanyName
-    }, () => {
-      this.validatePhone();
-      this.validateEmail();
-      this.validateCellPhone();
-      console.log(this.state);     
-    });
+    var item = {
+      startDate: this.state.startDate,
+      companyName: this.state.companyName,
+      country: this.state.country,
+      topic: this.state.topic,
+      contactPhone: this.state.contactPhone,
+      contactCellPhone: this.state.contactCellPhone,
+      contactEmail: this.state.contactEmail,
+      state: this.state.state,
+      streetAddress: this.state.streetAddress,
+      city: this.state.city,
+      zip: this.state.zip,
+      contactStreetAddress : this.state.contactStreetAddress,
+      contactZip : this.state.contactZip,
+      contactCountry: this.state.contactCountry,
+      contactState: this.state.contactState,
+      contactCity: this.state.contactCity,
+      equipmentsSelectedSite: this.state.equipmentsSelectedSite.join(", "),
+      equipmentsSelectedTraining: this.state.equipmentsSelectedTraining.join(", ")
+  }
+    API.postService(item).then((res) => console.log(res)).catch(err => console.log(err));
     
   }
 
@@ -202,6 +189,9 @@ export default class Example extends React.Component {
     this.validatePhone();
     this.validateCellPhone();
     this.handleCompanyName();
+    this.setState({
+      active: ((this.state.validCellPhone !== "undefined" && this.state.validCellPhone === true) || (this.state.validEmail !== "undefined" && this.state.validEmail === true) || (this.state.validPhone !== "undefined" && this.state.validPhone === true)) || this.state.validZIP && this.state.validCompanyName
+    });
   }
 
   printDocument = () => {
@@ -290,7 +280,7 @@ export default class Example extends React.Component {
                 placeholder="Enter the name of the company"
                 onChange={this.handleInputChange}
               />
-              <Alert color={(this.state.validCompanyName) ? "success" : "danger"}>{(this.state.validCompanyName) ? messageCorrect : messageIncorrect}</Alert>
+              {(this.state.validCompanyName) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
             </FormGroup>
             <FormGroup>
               <Label for="dateOfRequest">Date of Request</Label>
@@ -312,7 +302,7 @@ export default class Example extends React.Component {
                 <option name="paymentForTraining" value={"Direct Sale"}>Direct Sale</option>
                 <option name="paymentForTraining" value={"ARCA"}>ARCA</option>
               </Input>
-              <Alert color={(this.state.paymentForTraining) !== "" ? "light" : "warning"}>{(this.state.paymentForTraining) !== "" ? "" : messageWarning}</Alert>
+              {(this.state.paymentForTraining) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
             </FormGroup>
 
               <FormGroup>
@@ -325,7 +315,7 @@ export default class Example extends React.Component {
                 <option name="topic" value={"3"}>3</option>
                 <option name="topic" value={"Other"}>Other</option>
               </Input>
-              <Alert color={(this.state.topic.length) > 0 ? "success" : "danger"}>{(this.state.topic.length) > 0 ? messageCorrect : messageIncorrect}</Alert>
+              {(this.state.topic.length) > 0 && this.state.topic !== "Other" ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
             </FormGroup>
                 
             {
@@ -339,7 +329,7 @@ export default class Example extends React.Component {
                 placeholder="Enter new topic"
                 onChange={this.handleInputChange}
               />
-              <Alert color={(this.state.topic.length) > 0 ? "success" : "danger"}>{(this.state.topic.length) > 0 ? messageCorrect : messageIncorrect}</Alert>
+              {(this.state.topic.length) > 0 ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
               </FormGroup>
             ) : ""
             }
@@ -362,7 +352,8 @@ export default class Example extends React.Component {
                 placeholder="ZIP"
                 onChange={this.handleInputChange}
               />
-              <Alert color={(this.state.validZIP) > 0 ? "success" : "danger"}>{(this.state.validZIP) ? messageCorrect : messageIncorrect}</Alert>
+              {(this.state.validZIP) > 0 ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
+              <br/>
               <Label for="country">Country</Label>
               <Input type="select" name="country" id="country" onChange={this.handleInputChange}>
                 <option>United States</option>
@@ -430,7 +421,7 @@ export default class Example extends React.Component {
                 placeholder="Valid email format example@test.com"
                 onChange={this.handleInputChange}
               />
-              <Alert color={(this.state.validEmail) ? "success" : "danger"}>{(this.state.validEmail) ? messageCorrect : messageIncorrect}</Alert>
+              {(this.state.validEmail) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
             </FormGroup>
             <FormGroup>
               <Label for="contactPhone">Contact Person's Contact Number</Label><br />
@@ -438,10 +429,10 @@ export default class Example extends React.Component {
                 type="text"
                 name="contactPhone"
                 id="contactPhone"
-                placeholder="Valid phone format example 1999999999"
+                placeholder="Valid phone format example +1 (999) 999-999"
                 onChange = {this.handleInputChange}
               />
-              <Alert color={(this.state.validPhone) ? "success" : "danger"}>{(this.state.validPhone) ? messageCorrect : messageIncorrect}</Alert>
+              {(this.state.validPhone) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
             </FormGroup>
             <FormGroup>
               <Label for="contactCell">
@@ -454,7 +445,7 @@ export default class Example extends React.Component {
                 placeholder="Enter the cell number of the contact"
                 onChange={this.handleInputChange}
               />
-              <Alert color={(this.state.validCellPhone) ? "success" : "danger"}>{(this.state.validCellPhone) ? messageCorrect : messageIncorrect}</Alert>
+              {(this.state.validCellPhone) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
             </FormGroup>
 
         
@@ -575,7 +566,7 @@ export default class Example extends React.Component {
               <Input type="textarea" name="instructions" id="instructions" onChange={this.handleInputChange} />
             </FormGroup>
 
-            <Button name = "active" onClick={this.handleSubmit} disabled={this.state.active}>Submit</Button>
+            <Button name = "active" onClick={this.handleSubmit} disabled={!this.state.active}>Submit</Button>
           </Form>
 
           <div>
