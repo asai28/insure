@@ -5,6 +5,7 @@ module.exports = function(app) {
     app.get("/api/services", function(req, res){
         db.Service.findAll({})
         .then(function(service){
+            console.log(service)
             res.json(service)
         });
     });
@@ -15,7 +16,7 @@ module.exports = function(app) {
     // create takes an argument of an object describing the item we want to
     // insert into our table. In this case we just we pass in an object with a text
     // and complete property (req.body)
-    db.Todo.create({
+    db.Service.create({
         startDate: req.body.startDate,
         companyName: req.body.companyName,
         country: req.body.country,
@@ -35,6 +36,9 @@ module.exports = function(app) {
         equipmentsSelectedSite: req.body.equipmentsSelectedSite,
         equipmentsSelectedTraining: req.body.equipmentsSelectedTraining
     }).then(function(service) {
+        console.log("Posted", service.get({
+            plain: true
+          }))
       res.json(service);
     });
   });

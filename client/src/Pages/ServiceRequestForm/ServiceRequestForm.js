@@ -26,9 +26,6 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import { FaPlus, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 
-/*Imports required for input validation */
-import 'react-inputs-validation/lib/react-inputs-validation.min.css';
-
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -453,12 +450,7 @@ export default class Example extends React.Component {
               {(this.state.topic === "Training") ? 
               <div>
               <Label for="sameLocAsTraining">Same Location as Training? </Label>
-              <CustomInput
-                type="checkbox"
-                id="cb-1"
-                checked={this.state.sameLocAsTraining}
-                onChange={e => this.setState({ checked: !this.state.sameLocAsTraining })}
-              />
+              <br />
               <input type="checkbox" id="check" name="sameLocAsTraining" value={this.state.sameLocAsTraining} checked = {this.state.sameLocAsTraining} onChange={this.handleInputChange} onClick={e => {this.setState({sameLocAsTraining: !this.state.sameLocAsTraining})
               if (this.state.sameLocAsTraining){
                 this.setState(
@@ -555,9 +547,9 @@ export default class Example extends React.Component {
             <Input type = "text" name = "addOn" id= "addOn" value={this.state.addOn} onChange = {this.handleInputChange}/>
             <div style={styles.FaPlus}><FaPlus onClick = {() => {if(this.state.addOn.trim() !== ""){this.setState({equipmentsForTraining: this.state.equipmentsForTraining.concat(this.state.addOn)})}}}/> </div>
           </FormGroup>
+
+
               </div>
-        
-        
 
             <FormGroup>
               <Label for="instructions">

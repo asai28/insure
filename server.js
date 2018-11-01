@@ -24,6 +24,6 @@ app.get("/", (req, res)=>{
     res.json("Hello from server");
 });
 
-db.sequelize.sync().then(function() {
+db.sequelize.sync({force: false}).then(function() {
 app.listen(PORT,function(){`Listening to port ${PORT}`});
 });
