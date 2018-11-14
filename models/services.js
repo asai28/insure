@@ -11,6 +11,9 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: false
         },
+        producer: {
+            type: DataTypes.STRING
+        },
         contactPhone: DataTypes.STRING,
         contactCellPhone: DataTypes.STRING,
         contactEmail: DataTypes.STRING,

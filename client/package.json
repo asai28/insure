@@ -25,7 +25,7 @@
     "react-dom": "^16.6.0",
     "react-icons": "^3.2.2",
     "react-inputs-validation": "^1.2.1",
-    "react-moment": "^0.8.2",
+    "react-moment": "^0.8.3",
     "react-multiselect-checkboxes": "0.0.17",
     "react-pdf": "^3.0.5",
     "react-router-dom": "^4.3.1",

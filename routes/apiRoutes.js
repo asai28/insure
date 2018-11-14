@@ -11,7 +11,7 @@ module.exports = function(app) {
     });
 
     // POST route for saving a new service
-  app.post("/api/services", function(req, res) {
+  app.post("/api/services           ", function(req, res) {
     console.log(req.body);
     // create takes an argument of an object describing the item we want to
     // insert into our table. In this case we just we pass in an object with a text
@@ -24,6 +24,7 @@ module.exports = function(app) {
         contactPhone: req.body.contactPhone,
         contactCellPhone: req.body.contactCellPhone,
         contactEmail: req.body.contactEmail,
+        producer: req.body.producer,
         state: req.body.state,
         streetAddress: req.body.streetAddress,
         city: req.body.city,
@@ -42,5 +43,28 @@ module.exports = function(app) {
       res.json(service);
     });
   });
+
+  app.get("/api/employees", function(req, res){
+
+    db.Employee.findAll({})
+    .then(function(employee){
+        console.log(employee)
+        res.json(employee)
+    });
+});
+
+app.post("/api/employees", function(req, res){
+    db.Employee.create({
+        EMP_NAME: req.body.EMP_NAME,
+        EMAIL: req.body.EMAIL,
+        EMP_STATUS: req.body.EMP_STATUS
+    }).then(function(employee) {
+        console.log("Posted", service.get({
+            plain: true
+          }))
+      res.json(employee);
+    });
+});
+
 
 }
