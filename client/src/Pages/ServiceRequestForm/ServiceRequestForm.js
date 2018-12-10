@@ -15,11 +15,15 @@ import {
 } from "reactstrap";
 
 /*Imports for modals from reactstrap */
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
 
 /*Imports required for Form Group */
 import { Form, FormGroup, Label, Input } from "reactstrap";
 import { Container } from "reactstrap";
+
+/*Import tooltip or popover from reactstrap*/
+//import { Tooltip } from "reactstrap";
+import {Popover, PopoverHeader, PopoverBody} from "reactstrap";
 
 //Importing CSS for body, logo and table of the pdf generator
 import "./style.css";
@@ -27,89 +31,134 @@ import "./style.css";
 /*Imports required for React Calendar */
 import DatePicker from "react-datepicker";
 import moment from "moment";
-import Moment from 'react-moment';
-import 'moment-timezone';
+import Moment from "react-moment";
+import "moment-timezone";
 import "react-datepicker/dist/react-datepicker.css";
 
 //Validation icons
-import { FaPlus, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaPlus, FaCheckCircle, FaTimesCircle, FaTrash} from "react-icons/fa";
 
 //Importing cities and states for countries
 import cities from "../../utils/cities.json";
 import states from "../../utils/us-states.json";
+import services from "../../utils/services.json";
 
 //Connection to backend
 import API from "../../utils/API";
 
 //imports for PDF generation
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 window.html2canvas = html2canvas;
 
 const styles = {
-  'pdf': {
-    'padding': '10px 10px',
-    'height': '180mm',
-    'width': '200mm'
+  pdf: {
+    padding: "10px 10px",
+    height: "180mm",
+    width: "200mm"
   },
-  'h4': {
-    'color': '#000'
+  h4: {
+    color: "#000"
   },
-  'logo': {
-    'float': 'right',
-    'height': '100px',
-    'width': '300px'
+  logo: {
+    float: "right",
+    height: "100px",
+    width: "300px"
   },
-  'info': {
-    'float': 'left'
+  info: {
+    float: "left"
   },
-  'content': {
-    'clear': 'both'
+  content: {
+    clear: "both"
   },
-  'quotation': {
-    'fontFamily': 'Andika',
-    'color': '#009999'
+  quotation: {
+    fontFamily: "Andika",
+    color: "#009999"
   },
-  'billedTo': {
-    'float': 'left'
+  billedTo: {
+    float: "left"
   },
-  'quote': {
-    'float': 'right'
+  quote: {
+    float: "right"
   },
-  'FaPlus' : {
-    'color' : '#339933'
+  FaPlus: {
+    color: "#339933"
   },
-  'FaCheck': {
-    'color' : '#339933'
+  FaCheck: {
+    color: "#339933"
   },
-  'FaTimes' : {
-    'color' : "#cc3300"
+  FaTimes: {
+    color: "#cc3300"
   },
-  'note': {
-    'fontFamily': 'Palatino Linotype',
-    'fontSize': '0.75em',
-    'fontWeight': '500'
+  note: {
+    fontFamily: "Palatino Linotype",
+    fontSize: "0.75em",
+    fontWeight: "500"
+  },
+  notify: {
+    color: "#228B22",
+    display: "none",
+    fontWeight: "700"
+  },
+  removeContactNotification: {
+    color: "#E82C0C",
+    display: "none",
+    fontWeight: "700"
   }
-
-}
+};
 
 //Initialized outside to add new equipments on the fly
 var equipmentsSelectedSite = [];
 var equipmentsForTraining = [];
+var equipmentsAlwaysOnSite = [
+  "Laptop",
+  "projectorScreen",
+  "Table",
+  "trainingKit",
+  "forkliftTrainingKit",
+  "CPRmannequins",
+  "firstAidAEDKit",
+  "Handouts"
+];
+var equipments = [];
+var equipmentIDs = [
+  "Laptop",
+  "projectorScreen",
+  "Table",
+  "trainingKit",
+  "forkliftTrainingKit",
+  "CPRmannequins",
+  "firstAidAEDKit",
+  "Handouts"
+];
+
+//Unique Companies
+var uniqueCompanies = [];
 
 //Get employee names from API.js
-var employees = []
+var employees = [];
+
+//Get company Details, contacts, locations
+var getCompanyDetails = [];
+var getCompanyContacts = [];
+var getCompanyLocations = [];
+var topicsVsEquipments = [];
+
+//Get all requests in the same request form
+var requestedServices = [];
+var listOfServices = [];
+var listOfNonTrainingServices = [];
 
 //Get all US states
-var us_states = []
-for(let key in states){
+var us_states = [];
+for (let key in states) {
   us_states.push(states[key]);
 }
 
-function getInitial(state){
-  for(let key in states){
-    if(states[key] === state){
-      return key;  
+function getInitial(state) {
+  for (let key in states) {
+    if (states[key] === state) {
+      return key;
     }
   }
 }
@@ -117,15 +166,19 @@ function getInitial(state){
 export default class Example extends React.Component {
   constructor(props) {
     super(props);
-    this.toggle = this.toggle.bind(this);
     //State variables for form elements and their validation
     this.state = {
       startDate: moment(),
+      validThru: moment()
+        .add(90, "days")
+        .format("YYYY-MM-DD"),
+      newContractClient: false,
       companyName: "",
       newCompanyName: "",
-      companyNames: ["","5 D Construction","A-1 Restaurants","A&M","Aaron Clark Industries DBA Desert Foothills Landscape Management","ACS Engineering","Advance Lining","AK&J Sealants LLC","Alliance Plumbing","Alpha Group","Alpine","Alterra Pest Control","Ameri-fab","American Eagle Fire Protection","American Fire","American Leadership Academy","American Solar and Roofing","Apache Equipment Rentals","ARCA","Arion Care Solutions","Arizona Cooperative Therapies","Arizona Industries for the Blind (AIB)","Arizona Kawasaki","Arizona Materials","Arizona Pacific Pulp and Paper","Arizona Protection Agency","Arizona Roofing Contractor Association (ARCA)","Arizona Stone","Artisan Stone","Asprient Properties","AZ Border Transfer","AZ Industrial Pipeline Video","AZ Repair Masons","AZTechRadiology","Bestway Electric Motor","Beyond Stone","BIG Sur","Blount Contracting","Blue Sky Pest Control","BluePrint Hope High School","Bob's Roofing","Bonded Logic","Botta Concrete","Brakemax","Brown Brothers Asphalt","BSA","Burdette Cabinets","Burke and Happy Valley","Burke Basic","C & C Roofing","C&S Sweeping","C&S Sweeping","Caballero Dairy","CAID","Canyon State Drywall","Capilano Properties","Caretakers Landscaping and Tree Managment","CellularOne","Central Arizona Supply","Century Apartments","Certa Pro","Champagne Pools","Cheyenne River Sioux Tribe","Choice Academies","Cholla Livestock","Cholla Management Group","City of Maricopa","Classic Roofing","Clean Cut","ClearSky Auto","Clearwater","Clements Agency","Cobre Valley","Cochise Tech and Development","Community Care Solutions","Community Landscape Management","Cooper Roofing","Copperstate Metals","Countertop Creations","Courier Graphics","CoxReels","CPC","Crating Technology","Crazy Horse","Creative Innervisions LLC","CrossRoad Carriers","Crossroads for Women","Crum Plumbing","CSI","DADC","Dairyland Milk","Dalmolin Excavating Inc","DCB","Defense Pest Control","Desert Fleet","Desert Sun Moving","Desperado Dairy","DHI Communities","Dine BII Association for Disabled Citizens Inc","Dirt","Division 9","DMT","Dolphinaris","Door Mill","Dr. Erin Bradley Family Medicine","Drawer Connection, Inc","Dry Force","DuBrook","Duffy Development","Dugan Calf Farm","Duncan Families Farms","EFG America","Elite Roofing Supply","Embrey","Emergency Restoration","Ennssolutions","Epifini","Esteem Children's Services","Evergreen Turf","Family Support Resources","Farm Fresh","Felix Construction","FMG","Foam Experts Roofing Inc","Fondomonte","Frontline Exterminating","Garden House","GKD Management","GPM LandScape","Grabber Power Products","Granite Basin Roofing","GreenScapes","Gryphon Roofing","Haggai","Happy Valley","Haralson Tire","Hard Rock Concrete","Harvest Power Community Development Group Inc","Hensel Phelps","Houston Trucking","Hozhoni Foundation Inc","Hualapai","Huerta Trucking","Hurricane Fence Co","Hwal'bayBaj","Imagine Architectural Concrete","Inegrety Comercial Cleaning","Inn-Apartments","Innovative Green Technologies","Insure Compliance","InterMountain West Civil Contractors","Interstate Batteries","Invader Pest","JFN Mechanical","Jicarilla Apache Nation","JLC Roofing","JMH Trucking","JPCI","Juarez Contracting","Kann Enterprises_Interstate Batteries","KC Homes","Keystone","Kingman Academy of Learning","Kinkaid Civil Construction","La Canasta","Arizona Society of Safety Engineers (ASSE)","Lakin Milling","Larson Waste","LeBaron & Carroll","Leeds West Groups","Lehi Valley Trading","Leinbach Company Management Inc","LGO","Liberty Fence & Supply, LLC","Lifetime Roof Systems Inc.","Lindel Mechanical","LMC","LoneStar Trucking","Lumberjack Timber","Lyons Roofing","M&B Mechanical","Maddy's Pools","McManus Construction","Metal Masters Mechanical","Metric Roofing","Metro Fire Equipment Inc.","Metro Phoenix PHCC","Michael Brothers","MicroBlend","Mirage Plastering","Modern Paving","Monarch","National Fire Control","NCT","Neiders Company","New folder","New Horizon Youth Homes","New Western","Norman S Wright Co Inc.","Nunez Contracting","Old Tucson","Onni Properties","Otto Transportation","OTTO Trucking","Overleys","Overson Roofing","Paramount Roofing","Paramount Supply","Patriot Disposal","Paul Johnson Drywall","Paul Rich Roofing","Penguin Air","Perco Rock","PEST","Pete King Construction","Phoenix Extermination","Phoenix Recycling","Phoenix Towing Service","Pima Air & Space Museum","Pinal Feeding","Pinal Feeding Red River","PindernationElectric","Pinnacle Restoration","Pioneer Landscape","Pioneer Roofing Co","Planetary Science Institute","Platinum Plastering","Plexus","Plumb Plumbing","PM Plumbing","Prisma","ProSource Roofing","Pueblo of Sandia","Pueblo of Zuni","Pure Landscape","PVIC","Pyramid Technologies","Quechan Tribe","R.T. Brown","Rapid Material Transport","Red Mountain","Red Mountain Rentals","Regency Towers Assocation","Rest Assured","Right Away","Rigid Industries","Rigid Industries","RKS Plumbing","RO Landscape","Robert's Tire","Roberts Tire","Rocky mountain restoration","Romona Farms","Roofing Southwest","Roofing Supply Group","Rovey Dairy","RSG Roofing Supplies","SACATE","Sage","SAGE Counseling","Saguaro Trucking","SAK Plumbing","San Tan Landscape Management","Scottsdale Livestock","SFI","Sierra Signs","Sitting Bull College","Sonoran Air","Sonoran Landesign","Southwest rock","Specialty Orthopaedics","Spectrum","Sportsman Concrete","Stapley Action Garage Door","Star Roofing Inc","Steamy Concepts","Stillwater Landscape Mgmt","Stockwell Scientific","Storage Equipment Systems Inc","Sun City CareGivers","Sun Grinding","Sun State Plumbing","Sun Valley Supply","Sundance","Sunrise Crane Services Inc","Sunshine Acres","Sunshine Residential","Sunstate Plumbing","Sunstate Sweeping","Tecta America Arizona","Teledata","The Mahoney Group","The Maid Connection","The Manning Group","Titan Pest Control","TMC Landscape","Total Waste Management","Tree Doctors","Tremco","Trinsic on Broadway","Trinsic on Indian School","UEB","United Food Bank","Univeral Piping","USI Mesa Insulation","VIP Roofing","W. R. Schulz Properties","Weigand-Omega Management","Weinberger","Western Transport Logistics Inc.","Western Utility Contractors LLC","Whitfill Nursery","Winslow Indian Health Care Center","Wolf Waste LLC","Yavapai-Apache Cliff Castle Casino Hotel","Yavapai-Apache Nation","Young Builders Roofing - A-S Urethane Systems","Marlin Mechanical","Brooks Bros Utility","Prime Pest Control","The HUB Bar and Grill","5 Guys Construction","Zion Compassion Care","Banker Insulation","Cummings Plumming","Summit Inc","Austin Centers for Exceptional Students (ACES)","Sahara Development Inc. Tucson","Nexus Pool Care","J Bar G Restaurants LLC","DAS Products, Inc","Community Medical Services","Appliance Part Company","Saguaro Foundation","Solana Outdoor Living, LLC","Ron Brock's Heating and Cooling","Summit Insurance","Cool Touch, LLC","FLP, LLC","Little Priest College","T&T Cleaning and Restoration","Mt. Graham Hospital","Winnebago Tribe","United Tribes Technical College (UTTC)","TLC Supportive Living Services of Arizona Inc.","Green Valley Hospital","Young Future Tire","New Horizon Community Care","EPCOR Water","Arizona Provider Training (APT)","Aneva Solar LLC","Allegiant Health Care and Rehabilitation","Marc Community Resources Inc.","Central Arizona Project","HJ3","Apache Nugget","Pursuit Builders","Southwest Risk","Achilles AC","Hula Hut","Revamp Roofing","Tega Industries, Inc.","Dutt Hospitality Group","Standing Rock Sioux Tribe","Anthem Pest Control","All Things Metal","Environments by Rojas","State Seal","Cullum Homes Inc","Roofing Specialist","Sault Tribe","Spartan Electric Inc.","ConnectionsAZ","Arizona Sanitation Services","Liberty Companies","Coppertree Construction","Sunstate Plumbing","Reidhead Plumbing & Solar","Apache Medical Transport","Havasu Landing Resort and Casino","Royal Wall Systems","CAM Properties","Parks and Sons of Sun City","APCON Construction Co","West Coast Roofing","Picuris Pueblo","Royal Renovation","Mescalero Tribe","Hendel's Air Conditioning","CMMV LLC","Vroom","ITC AZ","Mountain Power Electircal","Sunrise Park Resort","South Eastern Arizona Behavioral Health","Proof. Pest Control","Caldwell Construction"],
+      companyNames: services.companyName,
       country: "United States",
       topic: "",
+      service: "",
       producer: "",
       sameLocAsTraining: false,
       validCompanyName: false,
@@ -133,27 +186,59 @@ export default class Example extends React.Component {
       validEmail: false,
       validCellPhone: false,
       validZIP: false,
-      contactPhone: 1,
-      contactCellPhone: 1,
+      contactName: "",
+      contactPhone: "",
+      contactCellPhone: "",
       contactEmail: "",
       state: "",
       streetAddress: "",
       city: "",
       zip: "",
-      contactStreetAddress : "",
-      contactZip : "",
+      contactStreetAddress: "",
+      contactZip: "",
       contactCountry: "United States",
       contactState: "",
       contactCity: "",
-      equipmentsForSite: ["Laptop", "Projector Screen", "TV monitor", "Table", "Electrical power socket with extension cord"],
+      //equipmentsForSite: ["Laptop", "Projector Screen", "TV monitor", "Table", "Electrical power socket with extension cord"],
       equipmentsSelectedSite: [],
       equipmentsSelectedTraining: [],
-      equipmentsForTraining : ["Laptop", "Projector Screen", "TV monitor", "Table", "Electrical power socket with extension cord", "Forklift training kit", "CPR mannequins", "First aid training bag", "AED training device", "Handouts"],
+      //equipmentsForTraining : ["Laptop", "Projector Screen", "TV monitor", "Table", "Electrical power socket with extension cord", "Forklift training kit", "CPR mannequins", "First aid training bag", "AED training device", "Handouts"],
+      equipments: [
+        "Laptop",
+        "Projector Screen",
+        "Table",
+        "Training Kit (Green Duffle Bag)",
+        "Forklift Training Kit (Grey Duffle Bag)",
+        "CPR mannequins",
+        "First Aid & AED Kit (Red Backpack)",
+        "Handouts"
+      ],
+      Laptop: false,
+      projectorScreen: false,
+      Table: false,
+      trainingKit: false,
+      forkliftTrainingKit: false,
+      CPRmannequins: false,
+      firstAidAEDKit: false,
+      RespiratorFitTestKit: false,
+      Handouts: false,
       active: true,
       addOn: "",
-      error:{},
+      error: {},
       modal: false,
-      quotationIssuedBy: ""
+      quotationIssuedBy: "",
+      instructions: "",
+      serviceModal: false,
+      billableService: true,
+      alternateName: "",
+      costForService: 0.0,
+      requestedServiceRows: [],
+      viewServiceRows: [],
+      totalCost: 0,
+      viewServiceModal: false,
+      showTopics: false,
+      popoverOpen: false,
+      description: ""
     };
     this.validateEmail = this.validateEmail.bind(this);
     this.validatePhone = this.validatePhone.bind(this);
@@ -167,33 +252,280 @@ export default class Example extends React.Component {
     this.toggleModal = this.toggleModal.bind(this);
     this.getEmployees = this.getEmployees.bind(this);
     this.saveCompany = this.saveCompany.bind(this);
+    this.addContact = this.addContact.bind(this);
+    this.addLocation = this.addLocation.bind(this);
+    this.getCompanies = this.getCompanies.bind(this);
+    this.addService = this.addService.bind(this);
+    this.toggleServiceModal = this.toggleServiceModal.bind(this);
+    this.toggleViewServicesModal = this.toggleViewServicesModal.bind(this);
+    this.getPriceAndQuantity = this.getPriceAndQuantity.bind(this);
+    this.getServices = this.getServices.bind(this);
+    this.saveServices = this.saveServices.bind(this);
+    this.removeServices = this.removeServices.bind(this);
+    this.togglePopOver = this.togglePopOver.bind(this);
   }
-
 
   componentDidMount = () => {
     this.getEmployees();
-  }
-  //Toggling Navbar
-  toggle() {
-    this.setState({
-      isOpen: !this.state.isOpen
-    });
-  }
+    this.getCompanies();
+  };
+
+  componentWillMount = () => {
+    API.getTopicBasedEquipments()
+      .then(res => {
+        //console.log(res.data);
+        topicsVsEquipments = res.data;
+        console.log("topic vs equipments loaded!");
+      })
+      .catch(err => console.log(err));
+    API.getListOfServices()
+    .then(res => {
+      console.log(res);
+      listOfServices = res.data;
+      console.log("services list loaded!");
+    })
+    .catch(err => console.log(err));
+  };
+
+  getPriceAndQuantity = () => {
+    var result = topicsVsEquipments.filter(
+      element => element.topic === this.state.topic
+    )[0];
+    if (result !== {} && this.state.topic !== "") {
+      document.getElementById("numServiceUnits").value = result.serviceUnits;
+      document.getElementById("durationInMin").value = result.DurationInMin;
+      document.getElementById("costForService").value = result.costOfService;
+
+      this.setState({
+        service: "Training - " + this.state.topic,
+        Laptop: this.state.Laptop || result.Laptop,
+        projectorScreen: this.state.projectorScreen || result.projectorScreen,
+        Table: this.state.Table || result.Table,
+        trainingKit: this.state.trainingKit || result.trainingKit,
+        forkliftTrainingKit: this.state.forkliftTrainingKit || result.forkliftTrainingKit,
+        CPRmannequins: this.state.CPRmannequins || result.CPRmannequins,
+        firstAidAEDKit: this.state.firstAidAEDKit || result.firstAidAEDKit,
+        RespiratorFitTestKit: this.state.RespiratorFitTestKit || result.RespiratorFitTestKit,
+        Handouts: this.state.Handouts || result.Handouts,
+        costForService: result.costOfService
+      });
+    }
+
+    var result2 = listOfServices
+    .filter(element => element.service === this.state.service)[0];
+    if (result2 !== undefined && this.state.service !== "" && this.state.service !== "Training") {
+      document.getElementById("numServiceUnits").value = result2.qty;
+      document.getElementById("costForService").value = result2.cost;
+
+      this.setState({
+        showTopics: false,
+        description: result2.description
+      });
+    }
+  };
+
+  getAvailableEquipments = () => {
+    //console.log(this.state.companyName);
+    var checkedEquipments = [];
+    var row = {};
+    if (this.state.companyName.trim() !== "") {
+      for (let i = 0; i < topicsVsEquipments.length; ++i) {
+        if (topicsVsEquipments[i].topic === this.state.topic) {
+          row = topicsVsEquipments[i];
+          break;
+        }
+      }
+    }
+  };
+
+  addContact = () => {
+    var item = {
+      newCompanyName: this.state.newCompanyName,
+      newContactName: this.state.newContactName,
+      newContactEmail: this.state.newContactEmail,
+      newContactOfficePhone: this.state.newContactOfficePhone,
+      newContactMobilePhone: this.state.newContactMobilePhone,
+      newContactMobilePhoneAlternate: this.state.newContactMobilePhoneAlternate,
+      mainContact: this.state.mainContact
+    };
+    API.newCompanyContact(item)
+      .then(res => {
+        console.log(res);
+        document.getElementById("newContactPhone").reset();
+      })
+      .catch(err => console.log(err));
+
+    document.getElementById("notifyContactAdded").style.display = "block";
+    document.getElementById("removeContactNotification").style.display =
+      "block";
+  };
+
+  addLocation = () => {
+    var item = {
+      newCompanyName: this.state.newCompanyName,
+      newContactStreetAddress: this.state.newContactStreetAddress,
+      newContactCity: this.state.newContactCity,
+      newContactState: this.state.newContactState,
+      newContactZIP: this.state.newContactZIP,
+      newContactCountry: this.state.newContactCountry,
+      mainLocation: this.state.mainLocation
+    };
+    API.newCompanyLocation(item)
+      .then(res => {
+        console.log(res);
+        document.getElementById("newContactLocation").reset();
+      })
+      .catch(err => console.log(err));
+
+    document.getElementById("notifyLocationAdded").style.display = "block";
+    document.getElementById("removeLocationNotification").style.display =
+      "block";
+  };
+
+  addService = () => {
+    var item = {
+      companyName: this.state.companyName,
+      topic: this.state.topic,
+      billable: document.getElementById("billable").checked,
+      qty: document.getElementById("numServiceUnits").value,
+      alternateName: this.state.alternateName.length === 0 ? this.state.topic : this.state.alternateName,
+      cost: this.state.costForService
+    };
+
+    console.log(item);
+
+    API.newServiceRequest(item)
+      .then(res => {
+        console.log(res);
+        this.setState({
+          topic: "",
+          billable: false,
+          alternateName: this.state.topic
+        });
+      })
+      .catch(err => console.log(err));
+
+    //Clear all fields to add further services
+    document.getElementById("addService").reset();
+  };
+
+  saveServices = () => {
+    requestedServices = [];
+    API.getServiceRequests()
+      .then(res => {
+        if (this.state.topic !== "") {
+          this.addService();
+        }
+        requestedServices = res.data;
+        console.log(requestedServices);
+        this.setState({
+          requestedServiceRows: this.getServices()
+        });
+      })
+      .catch(err => console.log(err));
+    this.toggleServiceModal();
+  };
+
+  getServices = () => {
+    return requestedServices
+      .filter(x => x.billable === true)
+      .map((x, index) => (
+        <tr key={"serviceRequest" + (index + 1)}>
+          <td>{x.alternateName}</td>
+          <td>{x.qty}</td>
+          <td>{x.cost.toFixed(2)}</td>
+          <td>${(x.qty * x.cost).toFixed(2)}</td>
+          {this.setState({
+            totalCost: this.state.totalCost + x.qty * x.cost * x.billable
+          })}
+        </tr>
+      ));
+  };
+
+  removeServices = () => {
+    var result = [];
+    API.getServiceRequests()
+      .then(res => {
+        requestedServices = res.data;
+        console.log("remove services",requestedServices);
+        result =  requestedServices
+          .map((x, index) => (
+            <tr key={"serviceRequest" + (index + 1)} id = {"serviceRequest" + (index + 1)}>
+              <td>{x.alternateName}</td>
+              <td>{x.qty}</td>
+              <td>{x.cost.toFixed(2)}</td>
+              <td>${(x.qty * x.cost).toFixed(2)}</td>
+              <td><FaTrash style = {{'color': 'red'}} onClick = {() => {
+                API.deleteService(x.alternateName)
+                .then(res => {
+                  this.setState({
+                    totalCost: this.state.totalCost - x.qty * x.cost * x.billable
+                  });
+                  })
+                .catch(err => console.log(err));
+              }}/>
+              </td>
+            </tr>
+          ));
+      })
+      .catch(err => console.log(err));
+      return result
+  };
+
+  getCompanies = () => {
+    API.getCompany()
+      .then(res => {
+        for (let i = 0; i < res.data.length; ++i) {
+          if (uniqueCompanies.indexOf(res.data[i].companyName) === -1 && res.data[i].companyName !== "") {
+            uniqueCompanies.push(res.data[i].companyName);
+          }
+        }
+        this.setState({ companyNames: uniqueCompanies });
+        console.log("Companies table loaded");
+      })
+      .catch(err => console.log(err));
+  };
 
   saveCompany = () => {
-    this.setState({
-      companyName: this.state.newCompanyName
-    });
+    this.addContact();
+    this.addLocation();
+    var item = {
+      companyName: this.state.newCompanyName,
+      newCompanyName: this.state.newCompanyName,
+      newProducer: this.state.newProducer,
+      newAgency: this.state.newAgency,
+      newContractClient: this.state.newContractClient,
+      Laptop: this.state.Laptop,
+      projectorScreen: this.state.projectorScreen,
+      Table: this.state.Table,
+      trainingKit: this.state.trainingKit,
+      forkliftTrainingKit: this.state.forkliftTrainingKit,
+      CPRmannequins: this.state.CPRmannequins,
+      firstAidAEDKit: this.state.firstAidAEDKit,
+      Handouts: this.state.Handouts
+    };
+    API.newCompany(item)
+      .then(res => {
+        console.log(res);
+      })
+      .catch(err => console.log(err));
+
+    API.postCompanyEquipments(item)
+      .then(res => console.log(res))
+      .catch(err => console.log(err));
+
+    this.getCompanies();
     this.toggleModal();
     console.log(this.state.newCompanyName, this.state.companyName);
-  }
+  };
 
   //Getting employees from server
-  getEmployees(){
-    API.getEmployees().then(function(res){
-      for(let i = 0; i < res.data.length; ++i){
-          employees.push(res.data[i].EMP_NAME)
+  getEmployees() {
+    API.getEmployees().then(function(res) {
+      for (let i = 0; i < res.data.length; ++i) {
+        employees.push(res.data[i].EMP_NAME);
       }
+      console.log("employees table loaded!");
     });
   }
 
@@ -201,66 +533,128 @@ export default class Example extends React.Component {
   handlePDF = () => {
     var companyName = this.state.companyName;
     var startDate = this.state.startDate;
-    var divHeight = document.getElementById('capture').offsetHeight;
-    var divWidth = document.getElementById('capture').offsetWidth;
-    return html2canvas(document.getElementById('capture'), {scale: 0.85, dpi: 278}).then(function(canvas){
-      var wid= divWidth;
-      var hgt= divHeight;
-      var img = canvas.toDataURL("image/png", wid = canvas.width, hgt = canvas.height);
-      var hratio = hgt/wid
-      var doc = new jsPDF('p','mm','a4');
-      var width = doc.internal.pageSize.width;    
-      var height = width * hratio
-      doc.addImage(img,'JPEG',20,25, width, height);
+    var divHeight = document.getElementById("capture").offsetHeight;
+    var divWidth = document.getElementById("capture").offsetWidth;
+    return html2canvas(document.getElementById("capture"), {
+      scale: 0.85,
+      dpi: 278
+    }).then(function(canvas) {
+      var wid = divWidth;
+      var hgt = divHeight;
+      var img = canvas.toDataURL(
+        "image/png",
+        (wid = canvas.width),
+        (hgt = canvas.height)
+      );
+      var hratio = hgt / wid;
+      var doc = new jsPDF("p", "mm", "a4");
+      var width = doc.internal.pageSize.width;
+      var height = width * hratio;
+      doc.addImage(img, "JPEG", 20, 25, width, height);
       console.log(startDate.toDate());
-      doc.save(companyName + "-Quotation-" + startDate.format("MM/DD/YYYY") + ".pdf");
-      });
-    }
+      doc.save(
+        companyName + "-Quotation-" + startDate.format("MM/DD/YYYY") + ".pdf"
+      );
+    });
+  };
 
-  handleCompanyName  = () => {
-    if (this.state.companyName.length < 2 && this.state.newCompanyName.length < 2){
+  handleCompanyName = () => {
+    if (
+      this.state.companyName.length < 2 &&
+      this.state.newCompanyName.length < 2
+    ) {
       this.setState({
         validCompanyName: false
       });
-    }
-    else{
+    } else {
       this.setState({
         validCompanyName: true
       });
     }
-  }
+
+    API.getCompanyDetails(this.state.companyName)
+      .then(res => {
+        getCompanyDetails = res.data;
+      })
+      .catch(err => console.log(err));
+
+    API.getCompanyContacts(this.state.companyName)
+      .then(res => {
+        getCompanyContacts = res.data;
+      })
+      .catch(err => console.log(err));
+
+    API.getCompanyLocations(this.state.companyName)
+      .then(res => {
+        getCompanyLocations = res.data;
+      })
+      .catch(err => console.log(err));
+
+    this.getAvailableEquipments();
+
+    API.getCompanyEquipments(this.state.companyName)
+      .then(res => {
+        var result = res.data;
+        this.setState({
+          Laptop: this.state.Laptop && !result.Laptop,
+          projectorScreen:
+            this.state.projectorScreen && !result.projectorScreen,
+          Table: this.state.Table && !result.Table,
+          trainingKit: this.state.trainingKit && !result.trainingKit,
+          forkliftTrainingKit:
+            this.state.forkliftTrainingKit && !result.forkliftTrainingKit,
+          CPRmannequins: this.state.CPRmannequins && !result.CPRmannequins,
+          firstAidAEDKit: this.state.firstAidAEDKit && !result.firstAidAEDKit,
+          RespiratorFitTestKit:
+            this.state.RespiratorFitTestKit && !result.RespiratorFitTestKit,
+          Handouts: this.state.Handouts && !result.Handouts
+        });
+      })
+      .catch(err => console.log(err));
+  };
 
   validatePhone = () => {
     var re = RegExp(/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
     this.setState({
       validPhone: re.test(this.state.contactPhone)
     });
-  
-  }
+  };
 
   validateCellPhone = () => {
     var re = RegExp(/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
     this.setState({
       validCellPhone: re.test(this.state.contactCellPhone)
     });
-  }
+  };
 
   validateEmail = () => {
-    var re = RegExp(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
-    this.setState({validEmail: re.test(String(this.state.contactEmail).toLowerCase())});
-  }
+    var re = RegExp(
+      /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    );
+    this.setState({
+      validEmail: re.test(String(this.state.contactEmail).toLowerCase())
+    });
+  };
 
   validateZIP = () => {
-    let zipRegex = RegExp('^[0-9]{5}(?:-[0-9]{4})?$');
+    let zipRegex = RegExp("^[0-9]{5}(?:-[0-9]{4})?$");
     this.setState({
       validZIP: zipRegex.test(this.state.zip)
     });
-  }
+  };
 
   handleChange(date) {
     this.setState({
       startDate: date
     });
+    this.setState({
+      validThru: moment(date)
+        .add(90, "days")
+        .format("YYYY-MM-DD")
+    });
+    document.getElementById("validThru").value = moment(
+      this.state.validThru
+    ).format("YYYY-MM-DD");
   }
 
   handleSubmit = e => {
@@ -268,19 +662,7 @@ export default class Example extends React.Component {
     this.setState({
       companyNames: this.state.companyNames.concat(this.state.companyName)
     });
-    
-    for(let i = 0; i < this.state.equipmentsForSite.length; ++i){
-      if(document.getElementById("equipmentForSite"+ i).checked === true){
-        equipmentsSelectedSite.push(document.getElementById("equipmentForSite"+ i).value);
-      }
-    }
-    
-    for(let i = 0; i < this.state.equipmentsForTraining.length; ++i){
-      if(document.getElementById("equipmentsForTraining"+ i).checked === true){
-        equipmentsForTraining.push(document.getElementById("equipmentsForTraining"+ i).value);
-      }
-    }
-    console.log(equipmentsSelectedSite, equipmentsForTraining);
+
     var item = {
       startDate: this.state.startDate,
       companyName: this.state.companyName,
@@ -294,22 +676,27 @@ export default class Example extends React.Component {
       city: this.state.city,
       zip: this.state.zip,
       producer: this.state.producer,
-      contactStreetAddress : this.state.contactStreetAddress,
-      contactZip : this.state.contactZip,
+      contactStreetAddress: this.state.contactStreetAddress,
+      contactZip: this.state.contactZip,
       contactCountry: this.state.contactCountry,
       contactState: this.state.contactState,
       contactCity: this.state.contactCity,
-      equipmentsSelectedSite: equipmentsSelectedSite.join(", "),
-      equipmentsSelectedTraining: equipmentsForTraining.join(", ")
-  }
+      instructions: this.state.instructions,
+      billableService: this.state.billableService
+    };
     API.postService(item)
-    .then((res) => {console.log(res); document.getElementById("serviceRequestForm").reset();}
-    ).catch(err => console.log(err));
-    
-  }
+      .then(res => {
+        console.log(res);
+        API.deleteServiceRequests(this.state.companyName)
+          .then(res => console.log("Deleted rows"))
+          .catch(err => console.log(err));
+        document.getElementById("serviceRequestForm").reset();
+      })
+      .catch(err => console.log(err));
+  };
 
   handleInputChange = e => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     this.setState({
       [name]: value
     });
@@ -319,9 +706,10 @@ export default class Example extends React.Component {
     this.validateCellPhone();
     this.handleCompanyName();
     this.setState({
-      active: ((this.state.validCellPhone !== "undefined" && this.state.validCellPhone === true) || (this.state.validEmail !== "undefined" && this.state.validEmail === true) || (this.state.validPhone !== "undefined" && this.state.validPhone === true)) || this.state.validZIP && this.state.validCompanyName
+      active: true
+      //((this.state.validCellPhone !== "undefined" && this.state.validCellPhone === true) || (this.state.validEmail !== "undefined" && this.state.validEmail === true) || (this.state.validPhone !== "undefined" && this.state.validPhone === true)) || this.state.validZIP && this.state.validCompanyName
     });
-  }
+  };
 
   toggleModal() {
     this.setState({
@@ -329,180 +717,349 @@ export default class Example extends React.Component {
     });
   }
 
+  toggleServiceModal() {
+    this.setState({
+      serviceModal: !this.state.serviceModal
+    });
+  }
+
+  toggleViewServicesModal = () => {
+    this.setState({
+      viewServiceModal: !this.state.viewServiceModal,
+      viewServiceRows: this.removeServices() != undefined ? this.removeServices() : []
+    });
+    
+  };
+
+  togglePopOver() {
+    this.setState({
+      popoverOpen: !this.state.popoverOpen
+    });
+  }
+
+  viewServiceModal = () => {
+    this.setState({
+      viewServiceRows: this.removeServices() != undefined ? this.removeServices() : []
+    });
+  }
+
   render() {
     return (
       <div>
-        <Navbar color="light" light expand="md">
-          <NavbarBrand href="/">
-            <img src="./logo.png" />
-            <h1 className="float-right">&nbsp;Insure Compliance</h1>{" "}
-          </NavbarBrand>
-          <NavbarToggler onClick={this.toggle} />
-          <Collapse isOpen={this.state.isOpen} navbar>
-            <Nav className="ml-auto" navbar>
-              <NavItem>
-                <NavLink href="/components/">Components</NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink href="https://github.com/reactstrap/reactstrap">
-                  GitHub
-                </NavLink>
-              </NavItem>
-              <UncontrolledDropdown nav inNavbar>
-                <DropdownToggle nav caret>
-                  Options
-                </DropdownToggle>
-                <DropdownMenu right>
-                  <DropdownItem>Option 1</DropdownItem>
-                  <DropdownItem>Option 2</DropdownItem>
-                  <DropdownItem divider />
-                  <DropdownItem>Reset</DropdownItem>
-                </DropdownMenu>
-              </UncontrolledDropdown>
-            </Nav>
-          </Collapse>
-        </Navbar>
-        <img src="./open3.jpg" alt="Construction workers" className="openingImage" />
+        <img
+          src="./open3.jpg"
+          alt="Construction workers"
+          className="openingImage"
+        />
 
         <Container className="mt-3">
           <Form id="serviceRequestForm">
             <FormGroup>
-            <Label for="companyName">Company Name</Label>
-            <Input type="select" name="companyName" id="companyNameSelect" onChange={this.handleInputChange} onClick={this.handleCompanyName}>
-                {this.state.companyNames.length === 0 ? 
-                <option name="companyName" value="">...</option> :
-                this.state.companyNames.map(option => 
-                <option>{option}</option>
-                )
-                }
+              <Label for="companyName">Company Name</Label>
+              <Input
+                type="select"
+                name="companyName"
+                id="companyNameSelect"
+                onChange={this.handleInputChange}
+                onClick={this.handleCompanyName}
+              >
+                <option>Select company name</option>
+                {services.companyNames.map(option => (
+                    <option>{option}</option>
+                  ))}
               </Input>
               <Label for="newCompanyName">New Company?</Label>
               <div>
-              <Button color="secondary" onClick={this.toggleModal}>Add new company</Button>
-              <Modal isOpen={this.state.modal} toggle={this.toggleModal} className={this.props.className}>
-                <ModalHeader toggle={this.toggleModal}>Enter new company details      </ModalHeader>
-                <ModalBody>
-                  <Form>
-                    <FormGroup>
-                      <Label for="newCompanyName">
-                        Company Name
-                      </Label>
-                      <Input type="text" name="newCompanyName" id="newCompanyName" placeholder="Enter company name" onChange={this.handleInputChange}/>
+                <Button color="secondary" onClick={this.toggleModal}>
+                  Add new company
+                </Button>
+                <Modal
+                  isOpen={this.state.modal}
+                  toggle={this.toggleModal}
+                  className={this.props.className}
+                >
+                  <ModalHeader toggle={this.toggleModal}>
+                    Enter new company details
+                  </ModalHeader>
+                  <ModalBody>
+                    <Form>
+                      <FormGroup>
+                        <Label for="newCompanyName">Company Name</Label>
+                        <Input
+                          type="text"
+                          name="newCompanyName"
+                          id="newCompanyName"
+                          placeholder="Enter company name"
+                          onChange={this.handleInputChange}
+                        />
 
-                      <Label for="newProducer">
-                        Producer
-                      </Label>
-                      <Input type="text" name="newProducer" id="newProducer" placeholder="Enter producer's name" onChange={this.handleInputChange}/>
+                        <Label for="newProducer">Producer</Label>
+                        <Input
+                          type="text"
+                          name="newProducer"
+                          id="newProducer"
+                          placeholder="Enter producer's name"
+                          onChange={this.handleInputChange}
+                        />
 
-                    <Label for="newAgency">
-                        Agency
-                      </Label>
-                      <Input type="text" name="newAgency" id="newAgency" placeholder="Enter agency's name" onChange={this.handleInputChange}/>
+                        <Label for="newAgency">Agency</Label>
+                        <Input
+                          type="text"
+                          name="newAgency"
+                          id="newAgency"
+                          placeholder="Enter agency's name"
+                          onChange={this.handleInputChange}
+                        />
 
-                      <Label for="newContractClients">
-                        Contract Clients
-                      </Label>
-                      <Input type="text" name="newContractClients" id="newContractClients" placeholder="Enter client's names" onChange={this.handleInputChange}/>
-                    </FormGroup>
-                    <hr/>
+                        <Label for="newContractClient">Contract Clients</Label>
+                        <br />
+                        <input
+                          type="checkbox"
+                          id="newContractClient"
+                          name="newContractClient"
+                          value={this.state.newContractClient}
+                          defaultChecked={this.state.newContractClient}
+                          onClick={() =>
+                            this.setState({
+                              newContractClient: !this.state.newContractClient
+                            })
+                          }
+                        />
+                        <br />
+                      </FormGroup>
+                      <hr />
 
-                    <FormGroup id="newContactPhone">
+                      <Form id="newContactPhone">
+                        <FormGroup>
+                          <Label for="newContactName">Contact Name</Label>
+                          <Input
+                            type="text"
+                            name="newContactName"
+                            id="newContactName"
+                            placeholder="Enter contact's name"
+                            onChange={this.handleInputChange}
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <Label for="newContactEmail">Contact Email ID</Label>
+                          <Input
+                            type="text"
+                            name="newContactEmail"
+                            id="newContactEmail"
+                            placeholder="Enter contact's email ID"
+                            onChange={this.handleInputChange}
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <Label for="newContactOfficeNumber">
+                            Contact Office Number
+                          </Label>
+                          <Input
+                            type="text"
+                            name="newContactOfficePhone"
+                            id="newContactOfficePhone"
+                            placeholder="Enter contact's office phone number"
+                            onChange={this.handleInputChange}
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <Label for="newContactMobilePhone">
+                            Contact Mobile Number
+                          </Label>
+                          <Input
+                            type="text"
+                            name="newContactMobilePhone"
+                            id="newContactMobilePhone"
+                            placeholder="Enter contact's mobile number"
+                            onChange={this.handleInputChange}
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <Label for="newContactMobileAlternate">
+                            Contact Alternate Mobile Number
+                          </Label>
+                          <Input
+                            type="text"
+                            name="newContactMobilePhoneAlternate"
+                            id="newContactMobilePhoneAlternate"
+                            placeholder="Enter contact's alternate mobile number"
+                            onChange={this.handleInputChange}
+                          />
+                        </FormGroup>
+                        <FormGroup>
+                          <Label for="mainContact">
+                            Is this the main contact?
+                          </Label>
+                          <br />
+                          <input
+                            type="checkbox"
+                            id="check"
+                            name="mainContact"
+                            value={this.state.mainContact}
+                            defaultChecked={this.state.mainContact}
+                            onClick={() =>
+                              this.setState({
+                                mainContact: !this.state.mainContact
+                              })
+                            }
+                          />
+                        </FormGroup>
+                        <br />
+                        <b style={styles.note}>
+                          Click on the plus icon to add more contacts
+                        </b>{" "}
+                        <br />
+                        <div style={styles.FaPlus}>
+                          <FaPlus onClick={this.addContact} />
+                        </div>
+                        <span>
+                          <div id="notifyContactAdded" style={styles.notify}>
+                            New contact has been added!
+                          </div>
+                          <div
+                            id="removeContactNotification"
+                            style={styles.removeContactNotification}
+                            onClick={() => {
+                              document.getElementById(
+                                "removeContactNotification"
+                              ).style.display = "none";
+                              document.getElementById(
+                                "notifyContactAdded"
+                              ).style.display = "none";
+                            }}
+                          >
+                            x
+                          </div>
+                        </span>
+                      </Form>
 
+                      <hr />
 
-                    <Label for="newContactName">
-                        Contact Name
-                      </Label>
-                      <Input type="text" name="newContactName" id="newContactName" placeholder="Enter contact's name" onChange={this.handleInputChange}/>
+                      <Form id="newContactLocation">
+                        <Label>Company Locations</Label> <br />
+                        <Label for="mainLocation">
+                          Is this the main office location?
+                        </Label>
+                        <br />
+                        <input
+                          type="checkbox"
+                          id="check"
+                          name="mainLocation"
+                          value={this.state.mainLocation}
+                          defaultChecked={this.state.mainLocation}
+                          onClick={() =>
+                            this.setState({
+                              mainLocation: !this.state.mainLocation
+                            })
+                          }
+                        />
+                        <br />
+                        <Label for="newContactStreetAddress">
+                          Street Address
+                        </Label>
+                        <Input
+                          type="text"
+                          name="newContactStreetAddress"
+                          id="newContactStreetAddress"
+                          placeholder="Enter street address"
+                          onChange={this.handleInputChange}
+                        />
+                        <Label for="newContactCity">City</Label>
+                        <Input
+                          type="text"
+                          name="newContactCity"
+                          id="newContactCity"
+                          placeholder="Enter name of city"
+                          onChange={this.handleInputChange}
+                        />
+                        <Label for="newContactState">State</Label>
+                        <Input
+                          type="text"
+                          name="newContactState"
+                          id="newContactState"
+                          placeholder="Enter name of state"
+                          onChange={this.handleInputChange}
+                        />
+                        <Label for="newContactZIP">ZIP code</Label>
+                        <Input
+                          type="text"
+                          name="newContactZIP"
+                          id="newContactZIP"
+                          placeholder="Enter ZIP code"
+                          onChange={this.handleInputChange}
+                        />
+                        <Label for="newContactCountry">Country</Label>
+                        <Input
+                          type="text"
+                          name="newContactCountry"
+                          id="newContactCountry"
+                          placeholder="Enter name of country"
+                          onChange={this.handleInputChange}
+                        />
+                        <b style={styles.note}>
+                          Click on the plus icon to add more locations
+                        </b>
+                        <br />
+                        <div style={styles.FaPlus}>
+                          <FaPlus onClick={this.addLocation} />{" "}
+                        </div>
+                        <span>
+                          <div id="notifyLocationAdded" style={styles.notify}>
+                            New location has been added!
+                          </div>
+                          <div
+                            id="removeLocationNotification"
+                            style={styles.removeContactNotification}
+                            onClick={() => {
+                              document.getElementById(
+                                "removeLocationNotification"
+                              ).style.display = "none";
+                              document.getElementById(
+                                "notifyLocationAdded"
+                              ).style.display = "none";
+                            }}
+                          >
+                            x
+                          </div>
+                        </span>
+                      </Form>
 
-                      <Label for="newContactEmail">
-                        Contact Email ID
-                      </Label>
-                      <Input type="text" name="newContactEmail" id="newContactEmail" placeholder="Enter contact's email ID" onChange={this.handleInputChange}/>
+                      <hr />
 
-                    <Label for="newContactOfficeNumber">
-                        Contact Office Number
-                      </Label>
-                      <Input type="text" name="newContactOfficeNumber" id="newContactOfficeNumber" placeholder="Enter contact's office phone number" onChange={this.handleInputChange}/>
+                      <Form id="equipmentsAlwaysAvailable">
+                        <Label for="equipmentsAlwaysAvailable">
+                          Equipments already available on site
+                        </Label>
+                        {equipmentsAlwaysOnSite.map((x, index) => (
+                          <div>
+                            <input
+                              type="checkbox"
+                              id={equipmentIDs[index]}
+                              name={x}
+                              onClick={this.handleInputChange}
+                            />{" "}
+                            {x}
+                          </div>
+                        ))}
+                      </Form>
+                    </Form>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button color="primary" onClick={this.saveCompany}>
+                      Save company
+                    </Button>
+                    <Button color="secondary" onClick={this.toggleModal}>
+                      Cancel
+                    </Button>
+                  </ModalFooter>
+                </Modal>
+              </div>
 
-                      <Label for="newContactMobileNumber">
-                        Contact Mobile Number
-                      </Label>
-                    <Input type="text" name="newContactMobileNumber" id="newContactMobileNumber" placeholder="Enter contact's mobile number" onChange={this.handleInputChange}/>
-
-                      <Label for="newContactMobileAlternate">
-                        Contact Alternate Mobile Number
-                      </Label>
-                      <Input type="text" name="newContactMobileAlternate" id="newContactMobileAlternate" placeholder="Enter contact's alternate mobile number" onChange={this.handleInputChange}/>                      
-
-                      <Label for="mainContact">
-                        Is this the main contact?
-                      </Label><br/>
-                      <input type="checkbox" id="check" name="mainContact" value={this.state.mainContact} checked = {this.state.mainContact} onClick={() => this.setState({mainContact: !this.state.mainContact})}/>
-                      <br />
-
-                    <b style = {styles.note}>Click on the plus icon to add more contacts</b> <br />
-                      <div style={styles.FaPlus}><FaPlus/> </div>
-                    </FormGroup>
-                    
-
-                    <hr/>
-                    
-                    <FormGroup id="newContactLocation">
-                    <Label>Company Locations</Label> <br/>
-
-
-                     <Label for="mainLocation">
-                        Is this the main office location?
-                      </Label><br/>
-                      <input type="checkbox" id="check" name="mainLocation" value={this.state.mainLocation} checked = {this.state.mainLocation} onClick={() => this.setState({mainLocation: !this.state.mainLocation})}/>
-                      <br />
-
-                    <Label for="companyLocation">
-                        Company Location
-                      </Label>
-                      <Input type="text" name="companyLocation" id="companyLocation" placeholder="Enter company's location" onChange={this.handleInputChange}/>                      
-
-
-                    <Label for="newCompanyStreetAddress">
-                        Street Address
-                      </Label>
-                      <Input type="text" name="newCompanyStreetAddress" id="newCompanyStreetAddress" placeholder="Enter street address" onChange={this.handleInputChange}/>                      
-
-                    <Label for="newCompanyCity">
-                        City
-                      </Label>
-                      <Input type="text" name="newCompanyCity" id="newCompanyCity" placeholder="Enter name of city" onChange={this.handleInputChange}/>                      
-
-                    <Label for="newCompanyState">
-                        State
-                      </Label>
-                      <Input type="text" name="newCompanyState" id="newCompanyState" placeholder="Enter name of state" onChange={this.handleInputChange}/>                      
-
-                      <Label for="newCompanyZIP">
-                        ZIP code
-                      </Label>
-                      <Input type="text" name="newCompanyZIP" id="newCompanyZIP" placeholder="Enter ZIP code" onChange={this.handleInputChange}/>                      
-
-                      <Label for="newCompanyCountry">
-                        Country
-                      </Label>
-                      <Input type="text" name="newCompanyCountry" id="newCompanyCountry" placeholder="Enter name of country" onChange={this.handleInputChange}/>                      
-                    
-                    <b style = {styles.note}>Click on the plus icon to add more locations</b><br />
-                    <div style={styles.FaPlus}><FaPlus/> </div>
-                    </FormGroup>
-                    
-
-                  </Form>
-                </ModalBody>
-                <ModalFooter>
-                  <Button color="primary" onClick={this.saveCompany}>Save company</Button>
-                  <Button color="secondary" onClick={this.toggleModal}>Cancel</Button>
-                </ModalFooter>
-              </Modal>
-            </div>
-
-              {(this.state.validCompanyName) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
+              {this.state.validCompanyName ? (
+                <FaCheckCircle style={styles.FaCheck} />
+              ) : (
+                <FaTimesCircle style={styles.FaTimes} />
+              )}
             </FormGroup>
             <FormGroup>
               <Label for="dateOfRequest">Date of Request</Label>
@@ -514,163 +1071,472 @@ export default class Example extends React.Component {
               />
             </FormGroup>
             <FormGroup>
+              <Label for="validThru">Request valid until (YYYY-MM-DD)</Label>
+              <Input
+                type="text"
+                name="validThru"
+                id="validThru"
+                placeholder="Quote valid till YYYY-MM-DD"
+                value={this.state.validThru}
+                onChange={this.handleInputChange}
+              />
+            </FormGroup>
+            <FormGroup>
               <Label for="paymentForTraining">
                 Who is paying for the Service?
               </Label>
-              <Input type="select" name="paymentForTraining" id="paymentForTraining" onChange={this.handleInputChange}>
-                <option name="paymentForTraining" value={""}>...</option>
-                <option name="paymentForTraining" value={"Producer"}>Producer</option>
-                <option name="paymentForTraining" value={"Contract"}>Contract</option>
-                <option name="paymentForTraining" value={"Direct Sale"}>Direct Sale</option>
-                <option name="paymentForTraining" value={"ARCA"}>ARCA</option>
+              <Input
+                type="select"
+                name="paymentForTraining"
+                id="paymentForTraining"
+                onChange={this.handleInputChange}
+              >
+                <option name="paymentForTraining" value={""}>
+                  Choose an option
+                </option>
+                <option name="paymentForTraining" value={"Producer"}>
+                  Producer
+                </option>
+                <option name="paymentForTraining" value={"Contract"}>
+                  Contract
+                </option>
+                <option name="paymentForTraining" value={"Direct Sale"}>
+                  Direct Sale
+                </option>
+                <option name="paymentForTraining" value={"ARCA"}>
+                  ARCA
+                </option>
               </Input>
-              {(this.state.paymentForTraining) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
+              {this.state.paymentForTraining ? (
+                <FaCheckCircle style={styles.FaCheck} />
+              ) : (
+                <FaTimesCircle style={styles.FaTimes} />
+              )}
             </FormGroup>
-
             <FormGroup>
-              <Label for="producer">
-                Producer
-              </Label>
+              <Label for="producer">Producer</Label>
+              <Input
+                type="select"
+                name="producer"
+                id="producer"
+                onChange={this.handleInputChange}
+              >
+                <option>Choose producer</option>
+                {getCompanyDetails.map(x => (
+                  <option name="producer" value={x.producer}>
+                    {x.producer}
+                  </option>
+                ))}
+              </Input>
+              <Label for="producer">Producer not listed? Enter here</Label>
               <Input
                 type="text"
                 name="producer"
                 id="producer"
-                placeholder="Enter name of producer"
+                placeholder="Enter other producer's name"
                 onChange={this.handleInputChange}
               />
             </FormGroup>
+            <Form>
+              <Label for="topic">Add Services</Label>
+              <div>
+                <Button color="primary" onClick={this.toggleServiceModal}>
+                  Add Services
+                </Button>
+                <Modal
+                  isOpen={this.state.serviceModal}
+                  toggle={this.toggleServiceModal}
+                  className={this.props.className}
+                >
+                  <ModalHeader toggle={this.toggleServiceModal}>
+                    Add Services
+                  </ModalHeader>
+                  <ModalBody>
+                    <Form id="addService">
+                    <FormGroup>
+                      <Label for="service">Services</Label>
+                      <Input
+                          type="select"
+                          name="service"
+                          id="service"
+                          onChange={this.handleInputChange}
+                          onClick = {() => {
+                            if(this.state.service === "Training"){
+                              this.setState({
+                                showTopics: true
+                              });
+                            }
+                            else{
+                              this.setState({
+                                showTopics: false
+                              });
+                            }
+                            this.getPriceAndQuantity();
+                          }}
+                        >
+                          <option name="service" value={""}>
+                            Choose a service
+                          </option>
+                          <option name = "Training" value="Training" onClick = {() => {
+                            this.setState({showTopics: true});
+                          }}>Training</option>
+                          {listOfServices.map(x => (
+                            <option name="service" value={x.service}>
+                              {x.service}
+                            </option>
+                          ))}
+                        </Input>
+                    </FormGroup>
+                    {this.state.showTopics === true? <div>
+                      <FormGroup>
+                        <Label for="topic">Topic</Label>
+                        <Input
+                          type="select"
+                          name="topic"
+                          id="topic"
+                          onChange={this.handleInputChange}
+                          onClick={this.getPriceAndQuantity}
+                        >
+                          <option name="topic" value={""}>
+                            Choose a topic
+                          </option>
+                          {topicsVsEquipments.map(x => (
+                            <option name="topic" value={x.topic}>
+                              {x.topic}
+                            </option>
+                          ))}
+                        </Input>
+                        {this.state.topic.length > 0 &&
+                        this.state.topic !== "Other" ? (
+                          <FaCheckCircle style={styles.FaCheck} />
+                        ) : (
+                          <FaTimesCircle style={styles.FaTimes} />
+                        )}
+                      </FormGroup>
 
-              <FormGroup>
-              <Label for="topic">Topic</Label>
-              <Input type="select" name="topic" id="topic" onChange={this.handleInputChange}>
-                <option name="topic" value={""}>...</option>
-                <option name="topic" value={"Training"}>Training</option>
-                <option name="topic" value={"1"}>1</option>
-                <option name="topic" value={"2"}>2</option>
-                <option name="topic" value={"3"}>3</option>
-                <option name="topic" value={"Other"}>Other</option>
-              </Input>
-              {(this.state.topic.length) > 0 && this.state.topic !== "Other" ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
-            </FormGroup>
-                
-            {
-            this.state.topic === "Other" ? (
-              <FormGroup>
-              <Label for="topic">Enter new topic</Label>
-              <Input
-                type="text"
-                name="topic"
-                id="topic"
-                placeholder="Enter new topic"
-                onChange={this.handleInputChange}
-              />
-              {(this.state.topic.length) > 0 ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
-              </FormGroup>
-            ) : ""
-            }
+                      <FormGroup>
+                        <Label for="newtopic">
+                          New Topic? Enter the topic below
+                        </Label>{" "}
+                        <br />
+                        <Input
+                          type="text"
+                          name="topic"
+                          id="newTopic"
+                          placeholder="Enter new topic's name"
+                          onChange={this.handleInputChange}
+                        />
+                      </FormGroup>
+                      </div> : <div>
+                      <Button id="Popover1" onClick={this.togglePopOver}>
+                        Read more about the Service
+                      </Button>
+                      <Popover placement="bottom" isOpen={this.state.popoverOpen} target="Popover1" toggle={this.togglePopOver}>
+                        <PopoverHeader id = "serviceName">{this.state.service}</PopoverHeader>
+                        <PopoverBody id = "description">{this.state.description}</PopoverBody>
+                      </Popover>
+                      </div>}
+                      <br/>
+                      <FormGroup>
+                        <Label for="billable">Billable Service</Label> <br />
+                        <input
+                          type="checkbox"
+                          id="billable"
+                          name="billableService"
+                          value={this.state.billableService}
+                          defaultChecked
+                          onClick={() =>
+                            this.setState({
+                              billableService: !this.state.billableService
+                            })
+                          }
+                        />
+                      </FormGroup>
 
+                      <FormGroup>
+                        <Label for="costForService">Cost for Service</Label>{" "}
+                        <br />
+                        <Input
+                          type="text"
+                          name="costForService"
+                          id="costForService"
+                          placeholder="Enter the cost for the service"
+                          onChange={this.handleInputChange}
+                        />
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label for="alternateNameForService">
+                          Alternate Name For Service
+                        </Label>{" "}
+                        <br />
+                        <Input
+                          type="text"
+                          name="alternateName"
+                          id="alternateNameForService"
+                          placeholder="Enter alternate name for service"
+                          onChange={this.handleInputChange}
+                        />
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label for="durationInMin">
+                          Duration of Service in Minutes
+                        </Label>{" "}
+                        <br />
+                        <Input
+                          type="text"
+                          name="durationInMin"
+                          id="durationInMin"
+                          placeholder="Enter duration of service in minutes"
+                          onChange={this.handleInputChange}
+                        />
+                      </FormGroup>
+
+                      <FormGroup>
+                        <Label for="quantity">Number of Units of Service</Label>{" "}
+                        <br />
+                        <Input
+                          type="text"
+                          name="numServiceUnits"
+                          id="numServiceUnits"
+                          placeholder="Enter number of service units"
+                          onChange={this.handleInputChange}
+                        />
+                      </FormGroup>
+                      <Button color="secondary" onClick={this.addService}>
+                        Enter another service
+                      </Button>
+                    </Form>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button color="primary" onClick={this.saveServices}>
+                      Save Services
+                    </Button>{" "}
+                    <Button color="secondary" onClick={this.toggleServiceModal}>
+                      Close
+                    </Button>
+                  </ModalFooter>
+                </Modal>
+              </div>
+              <br />
+              {/* <Label for="topic">View or Delete Services</Label>
+              <div>
+                <Button color="success" onClick={this.toggleViewServicesModal}>
+                  View or delete services
+                </Button>
+                <Modal
+                  isOpen={this.state.viewServiceModal}
+                  toggle={this.toggleViewServicesModal}
+                  className={this.props.className}
+                >
+                  <ModalHeader toggle={this.toggleViewServicesModal}>
+                  View or delete services
+                  </ModalHeader>
+                  <ModalBody>
+                    <table id="customers">
+                      <tr>
+                        <th>ACTIVITY</th>
+                        <th>QTY</th>
+                        <th>RATE</th>
+                        <th>AMOUNT</th>
+                        <th>DELETE</th>
+                      </tr>
+                      <tbody>
+                        {this.state.viewServiceRows.length > 0
+                          ? this.state.viewServiceRows
+                          : ""}
+                      </tbody>
+                    </table>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      color="primary"
+                      onClick={this.toggleViewServicesModal}
+                    >
+                      Save changes
+                    </Button>{" "}
+                    <Button
+                      color="secondary"
+                      onClick={this.toggleViewServicesModal}
+                    >
+                      Cancel
+                    </Button>
+                  </ModalFooter>
+                </Modal>
+              </div> */}
+            </Form>
             {this.state.topic === "Training" ? (
-              <FormGroup className = "training" id= "training">
-              <Label for="address">Address of Training</Label><br />
-              <Label for="streetAddress">Street Address</Label>
-              <Input
-                type="text"
-                name="streetAddress"
-                id="streetAddress"
-                placeholder="Street Address"
-                onChange={this.handleInputChange}
-              />
-              <Label for="zip">ZIP</Label>
-              <Input
-                type="text"
-                name="zip"
-                id="zip"
-                placeholder="ZIP"
-                onChange={this.handleInputChange}
-              />
-              {(this.state.validZIP) > 0 ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
-              <br/>
-              <Label for="country">Country</Label>
-              <Input type="select" name="country" id="country" onChange={this.handleInputChange}>
-                <option>United States</option>
-                {Object.keys(cities).map(country => <option>{country}</option>)}
-              </Input>
-              <Label for="state">State</Label>
-              <Input type="select" name="state" id="state" onChange={this.handleInputChange}>
-                <option>Arizona</option>
-                {us_states.map(state => <option>{state}</option>)}
-              </Input>
-              <Label for="city">City</Label>
-              <Input
-                type="text"
-                name="city"
-                id="city"
-                placeholder="Enter City"
-                onChange={this.handleInputChange}
-              />
-             
-              <Label for="langOfTraining">Language of training</Label>
-              <Input type="select" name="langTraining" id="langTraining" onChange={this.handleInputChange}>
-                <option name="langTraining" value="">...</option>
-                <option name="langTraining" value="English">English</option>
-                <option name="langTraining" value="Spanish">Spanish</option>
-                <option name="langTraining" value="Bilingual">Bilingual</option>
-              </Input>
-            
-            
-            
-              <Label for="numStudents">Number of students</Label>
-              <Input
-                type="text"
-                name="numStudents"
-                id="numStudents"
-                placeholder="Enter number of students"
-                onChange={this.handleInputChange}
-              />
-            
-            </FormGroup>) : ""}
-            
-            <FormGroup>
-              <Label for="contactFirstName">Contact Person's First Name</Label>
-              <Input
-                type="text"
-                name="contactFirstName"
-                id="contactFirstName"
-                placeholder="Enter first name"
-                onChange={this.handleInputChange}
-              />
+              <FormGroup className="training" id="training">
+                <Label for="address">Address of Training</Label>
+                <br />
+                <Label for="streetAddress">Street Address</Label>
+                <Input
+                  type="text"
+                  name="streetAddress"
+                  id="streetAddress"
+                  placeholder="Street Address"
+                  onChange={this.handleInputChange}
+                />
+                <Label for="zip">ZIP</Label>
+                <Input
+                  type="text"
+                  name="zip"
+                  id="zip"
+                  placeholder="ZIP"
+                  onChange={this.handleInputChange}
+                />
+                {this.state.validZIP > 0 ? (
+                  <FaCheckCircle style={styles.FaCheck} />
+                ) : (
+                  <FaTimesCircle style={styles.FaTimes} />
+                )}
+                <br />
+                <Label for="country">Country</Label>
+                <Input
+                  type="select"
+                  name="country"
+                  id="country"
+                  onChange={this.handleInputChange}
+                >
+                  <option>United States</option>
+                  {Object.keys(cities).map(country => (
+                    <option>{country}</option>
+                  ))}
+                </Input>
+                <Label for="state">State</Label>
+                <Input
+                  type="select"
+                  name="state"
+                  id="state"
+                  onChange={this.handleInputChange}
+                >
+                  <option>Arizona</option>
+                  {us_states.map(state => (
+                    <option>{state}</option>
+                  ))}
+                </Input>
+                <Label for="city">City</Label>
+                <Input
+                  type="text"
+                  name="city"
+                  id="city"
+                  placeholder="Enter City"
+                  onChange={this.handleInputChange}
+                />
+
+                <Label for="langOfTraining">Language of training</Label>
+                <Input
+                  type="select"
+                  name="langTraining"
+                  id="langTraining"
+                  onChange={this.handleInputChange}
+                >
+                  <option name="langTraining" value="">
+                    Choose a language of training
+                  </option>
+                  <option name="langTraining" value="English">
+                    English
+                  </option>
+                  <option name="langTraining" value="Spanish">
+                    Spanish
+                  </option>
+                  <option name="langTraining" value="Bilingual">
+                    Bilingual
+                  </option>
+                </Input>
+
+                <Label for="numStudents">Number of students</Label>
+                <Input
+                  type="text"
+                  name="numStudents"
+                  id="numStudents"
+                  placeholder="Enter number of students"
+                  onChange={this.handleInputChange}
+                />
               </FormGroup>
-              <FormGroup>
-              <Label for="contactLastName">Contact Person's Last Name</Label>
+            ) : (
+              ""
+            )}
+            <FormGroup>
+              <Label for="contactName">Contact Person's Name</Label>
+              <Input
+                type="select"
+                name="contactName"
+                id="contactName"
+                placeholder="Enter contact name"
+                onChange={this.handleInputChange}
+              >
+                <option key={"contactPerson"} value={""}>
+                  Choose contact person's name
+                </option>
+                {getCompanyContacts.map((x, index) => (
+                  <option key={"contact person" + index} value={x.contactName}>
+                    {x.contactName}
+                  </option>
+                ))}
+              </Input>
+              <Label for="contactName">
+                Name of contact not listed? Enter it here
+              </Label>
               <Input
                 type="text"
-                name="contactLastName"
-                id="contactLastName"
-                placeholder="Enter last name"
+                name="contactName"
+                id="contactName"
+                placeholder="Enter other contact's name"
                 onChange={this.handleInputChange}
               />
             </FormGroup>
             <FormGroup>
               <Label for="contactEmail">Contact Person's Email</Label>
               <Input
-                type="email"
+                type="select"
                 name="contactEmail"
                 id="contactEmail"
                 placeholder="Valid email format example@test.com"
                 onChange={this.handleInputChange}
+              >
+                <option key={"contactEmail"} value={""}>
+                  Choose contact person's email
+                </option>
+                {getCompanyContacts.map((x, index) => (
+                  <option
+                    key={"contact_person_email" + index}
+                    value={x.contactEmail}
+                  >
+                    {x.contactEmail}
+                  </option>
+                ))}
+              </Input>
+              <Label for="contactEmail">Email not listed? Enter it here</Label>
+              <Input
+                type="text"
+                name="contactEmail"
+                id="contactEmail"
+                placeholder="Enter other contact's email ID"
+                onChange={this.handleInputChange}
               />
-              {(this.state.validEmail) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
+              {this.state.validEmail ? (
+                <FaCheckCircle style={styles.FaCheck} />
+              ) : (
+                <FaTimesCircle style={styles.FaTimes} />
+              )}
             </FormGroup>
             <FormGroup>
-              <Label for="contactPhone">Contact Person's Contact Number</Label><br />
+              <Label for="contactPhone">Contact Person's Contact Number</Label>
+              <br />
               <Input
                 type="text"
                 name="contactPhone"
                 id="contactPhone"
                 placeholder="Valid phone format example +1 (999) 999-999"
-                onChange = {this.handleInputChange}
+                onChange={this.handleInputChange}
               />
-              {(this.state.validPhone) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
+              {this.state.validPhone ? (
+                <FaCheckCircle style={styles.FaCheck} />
+              ) : (
+                <FaTimesCircle style={styles.FaTimes} />
+              )}
             </FormGroup>
             <FormGroup>
               <Label for="contactCell">
@@ -683,225 +1549,348 @@ export default class Example extends React.Component {
                 placeholder="Enter the cell number of the contact"
                 onChange={this.handleInputChange}
               />
-              {(this.state.validCellPhone) ? <FaCheckCircle style = {styles.FaCheck}/> : <FaTimesCircle style = {styles.FaTimes} />}
+              {this.state.validCellPhone ? (
+                <FaCheckCircle style={styles.FaCheck} />
+              ) : (
+                <FaTimesCircle style={styles.FaTimes} />
+              )}
             </FormGroup>
-
-        
-              <div>
-              {(this.state.topic === "Training") ? 
-              <div>
-              <Label for="sameLocAsTraining">Same Location as Training? </Label>
+            <div>
+              {this.state.topic === "Training" ? (
+                <div>
+                  <Label for="sameLocAsTraining">
+                    Same Location as Training?{" "}
+                  </Label>
+                  <br />
+                  <input
+                    type="checkbox"
+                    id="check"
+                    name="sameLocAsTraining"
+                    value={this.state.sameLocAsTraining}
+                    defaultChecked = {false}
+                    onChange={this.handleInputChange}
+                    onClick={e => {
+                      this.setState({
+                        sameLocAsTraining: !this.state.sameLocAsTraining
+                      });
+                      if (this.state.sameLocAsTraining) {
+                        this.setState({
+                          contactStreetAddress: this.state.streetAddress,
+                          contactZip: this.state.zip,
+                          contactCountry: this.state.country,
+                          contactState: this.state.state,
+                          contactCity: this.state.city
+                        });
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                ""
+              )}
               <br />
-              <input type="checkbox" id="check" name="sameLocAsTraining" value={this.state.sameLocAsTraining} checked = {this.state.sameLocAsTraining} onChange={this.handleInputChange} onClick={e => {this.setState({sameLocAsTraining: !this.state.sameLocAsTraining})
-              if (this.state.sameLocAsTraining){
-                this.setState(
-                  {
-                    contactStreetAddress : this.state.streetAddress,
-                    contactZip : this.state.zip,
-                    contactCountry: this.state.country,
-                    contactState: this.state.state,
-                    contactCity: this.state.city
-                  }
-                )
-              }
-              }}/>
-              </div>
-               : ""}
-              <br/>
-              {this.state.sameLocAsTraining ? "" :
-              (<FormGroup className = "training" id= "training">
-              <Label for="address">Contact Address</Label><br />
-              <Label for="streetAddress">Street Address</Label>
-              <Input
-                type="text"
-                name="contactStreetAddress"
-                id="contactStreetAddress"
-                placeholder="Street Address"
-                onChange={this.handleInputChange}
-              />
-              <Label for="contactZip">ZIP</Label>
-              <Input
-                type="text"
-                name="contactZip"
-                id="contactZip"
-                placeholder="ZIP code"
-                onChange={this.handleInputChange}
-              />
-              <Label for="contactCountry">Country</Label>
-              <Input type="select" name="contactCountry" id="contactCountry" onChange={this.handleInputChange}>
-                <option>United States</option>
-                {Object.keys(cities).map(country => <option>{country}</option>)}
-              </Input>
-              <Label for="contactState">State</Label>
-              <Input type="select" name="contactState" id="contactState" onChange={this.handleInputChange}>
-                <option>Arizona</option>
-                {us_states.map(state => <option>{state}</option>)}
-              </Input>
-              <Label for="contactCity">City</Label>
-              <Input
-                type="text"
-                name="contactCity"
-                id="contactCity"
-                placeholder="Enter City"
-                onChange={this.handleInputChange}
-              />
-            </FormGroup>)
-          }  
-              
-          <FormGroup>
-          <Label for="equipmentForSite">Equipment needed for site</Label>
-          {this.state.equipmentsForSite.map((x, index) => {
-            return (
-            <div>
-            <input type="checkbox" id={"equipmentForSite" + index} name={"equipmentForSite" + index} value={x}/>{x}
-            </div>)
-          })}
+              {this.state.sameLocAsTraining ? (
+                ""
+              ) : (
+                <FormGroup className="training" id="training">
+                  <Label for="address">Contact Address</Label>
+                  <br />
+                  <Label for="streetAddress">Street Address</Label>
+                  <Input
+                    type="text"
+                    name="contactStreetAddress"
+                    id="contactStreetAddress"
+                    placeholder="Street Address"
+                    onChange={this.handleInputChange}
+                  />
+                  <Label for="contactZip">ZIP</Label>
+                  <Input
+                    type="text"
+                    name="contactZip"
+                    id="contactZip"
+                    placeholder="ZIP code"
+                    onChange={this.handleInputChange}
+                  />
+                  <Label for="contactCountry">Country</Label>
+                  <Input
+                    type="select"
+                    name="contactCountry"
+                    id="contactCountry"
+                    onChange={this.handleInputChange}
+                  >
+                    <option>United States</option>
+                    {Object.keys(cities).map(country => (
+                      <option>{country}</option>
+                    ))}
+                  </Input>
+                  <Label for="contactState">State</Label>
+                  <Input
+                    type="select"
+                    name="contactState"
+                    id="contactState"
+                    onChange={this.handleInputChange}
+                  >
+                    <option>Arizona</option>
+                    {us_states.map(state => (
+                      <option>{state}</option>
+                    ))}
+                  </Input>
+                  <Label for="contactCity">City</Label>
+                  <Input
+                    type="text"
+                    name="contactCity"
+                    id="contactCity"
+                    placeholder="Enter City"
+                    onChange={this.handleInputChange}
+                  />
+                </FormGroup>
+              )}
 
-          </FormGroup>
-
-          <FormGroup>
-          <Label for="equipmentForTraining">Equipment needed for training</Label>
-          {this.state.equipmentsForTraining.map((x, index) => {
-            return (
-            <div>
-            <input type="checkbox" id={"equipmentsForTraining" + index} name={"equipmentsForTraining" + index} value={x} />{x}
-            </div>)
-          })}
-          
-          <Label for="additionalEquipment">Need additional equipment? Add it here</Label>
-            <Input type = "text" name = "addOn" id= "addOn" value={this.state.addOn} onChange = {this.handleInputChange}/>
-            <div style={styles.FaPlus}><FaPlus onClick = {() => {if(this.state.addOn.trim() !== ""){equipmentsSelectedSite.push(this.state.addOn.trim())}}}/> </div>
-            
-          </FormGroup>
-
-          
-
-
-              </div>
-
+              <FormGroup>
+                <Label for="equipments">Equipment needed</Label> <br />
+                <input
+                  type="checkbox"
+                  id="Laptop"
+                  name="Laptop"
+                  defaultChecked={this.state.Laptop}
+                />
+                Laptop <br />
+                <input
+                  type="checkbox"
+                  id="projectorScreen"
+                  name="projectorScreen"
+                  defaultChecked={this.state.projectorScreen}
+                />
+                Projector Screen
+                <br />
+                <input
+                  type="checkbox"
+                  id="Table"
+                  name="Table"
+                  defaultChecked={this.state.Table}
+                />
+                Table
+                <br />
+                <input
+                  type="checkbox"
+                  id="forkliftTrainingKit"
+                  name="forkliftTrainingKit"
+                  defaultChecked={this.state.forkliftTrainingKit}
+                />
+                Forklift Training Kit (Grey Duffle Bag)
+                <br />
+                <input
+                  type="checkbox"
+                  id="trainingKit"
+                  name="trainingKit"
+                  defaultChecked={this.state.trainingKit}
+                />
+                Training Kit (Green Duffle Bag)
+                <br />
+                <input
+                  type="checkbox"
+                  id="CPRmannequins"
+                  name="CPRmannequins"
+                  defaultChecked={this.state.CPRmannequins}
+                />
+                CPR Mannequins
+                <br />
+                <input
+                  type="checkbox"
+                  id="firstAidAEDKit"
+                  name="firstAidAEDKit"
+                  defaultChecked={this.state.firstAidAEDKit}
+                />
+                First Aid AED Kit (Red bagpack)
+                <br />
+                <input
+                  type="checkbox"
+                  id="RespiratorFitTestKit"
+                  name="RespiratorFitTestKit"
+                  defaultChecked={this.state.RespiratorFitTestKit}
+                />
+                Respirator Fit Test Kit
+                <br />
+                <input
+                  type="checkbox"
+                  id="Handouts"
+                  name="Handouts"
+                  defaultChecked={this.state.Handouts}
+                />
+                Handouts
+                <br />
+                <Label for="additionalEquipment">
+                  Need additional equipment? Add it here
+                </Label>
+                <div style={styles.FaPlus} id="clearText">
+                  <Input
+                    type="text"
+                    name="addOn"
+                    id="addOn"
+                    value={this.state.addOn}
+                    onChange={this.handleInputChange}
+                  />
+                  <FaPlus
+                    onClick={() => {
+                      if (this.state.addOn.trim() !== "") {
+                        equipments.push(this.state.addOn.trim());
+                      }
+                    }}
+                  />{" "}
+                </div>
+              </FormGroup>
+            </div>
             <FormGroup>
               <Label for="instructions">
                 Provide instructions to service provider
               </Label>
-              <Input type="textarea" name="instructions" id="instructions" onChange={this.handleInputChange} />
+              <Input
+                type="textarea"
+                name="instructions"
+                id="instructions"
+                onChange={this.handleInputChange}
+              />
             </FormGroup>
-
             <FormGroup>
-              <Label for="quotationIssuedBy">
-              Quotation Issued By
-              </Label>
-              <Input type="select" name="quotationIssuedBy" id="quotationIssuedBy" onChange={this.handleInputChange}>
-                {employees.map((x,index) => <option key={"emp" + index} value={x}>{x}</option>)}
+              <Label for="quotationIssuedBy">Quotation Issued By</Label>
+              <Input
+                type="select"
+                name="quotationIssuedBy"
+                id="quotationIssuedBy"
+                onChange={this.handleInputChange}
+              >
+                {employees.map((x, index) => (
+                  <option key={"emp" + index} value={x}>
+                    {x}
+                  </option>
+                ))}
               </Input>
             </FormGroup>
-
-            <Button name = "active" onClick={this.handleSubmit} disabled={!this.state.active}>Submit</Button> &nbsp;
-            <Button onClick = {this.handlePDF}>Print</Button>
+            <Button
+              name="active"
+              onClick={this.handleSubmit}
+              disabled={!this.state.active}
+            >
+              Submit
+            </Button>{" "}
+            &nbsp;
+            <Button onClick={this.handlePDF}>Print</Button>
           </Form>
-          <br/>
-          
-        <div>
-          
-        <div id='capture' style={styles.pdf}>
-        <div>
-        <div style = {styles.info}>
-        Insure Compliance, LLC<br/>
-        4406 E Main St 102-58<br/>
-        Mesa, AZ 85205 US<br/>
-        (866) 647-2373<br/>
-        insurecompliance.net<br/>
-        </div>
-        <img src="./Capture.PNG" alt="Company logo" style={styles.logo}/>
-        </div>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        <div style = {styles.content}>
-        <h3 style={styles.quotation}>QUOTATION</h3>
-        
-        <div>
-          <div style = {styles.billedTo}>
-          <b>ADDRESS</b><br/>
-          {this.state.companyName}<br/>
-          {this.state.contactStreetAddress}<br/>
-          {this.state.contactCity} {getInitial(this.state.contactState)}{this.state.contactZip}<br/>
-          
+          <br />
+
+          <div>
+            <div id="capture" style={styles.pdf}>
+              <div>
+                <div style={styles.info}>
+                  Insure Compliance, LLC
+                  <br />
+                  4406 E Main St 102-58
+                  <br />
+                  Mesa, AZ 85205 US
+                  <br />
+                  (866) 647-2373
+                  <br />
+                  insurecompliance.net
+                  <br />
+                </div>
+                <img
+                  src="./Capture.PNG"
+                  alt="Company logo"
+                  style={styles.logo}
+                />
+              </div>
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <br />
+              <div style={styles.content}>
+                <h3 style={styles.quotation}>QUOTATION</h3>
+
+                <div>
+                  <div style={styles.billedTo}>
+                    <b>ADDRESS</b>
+                    <br />
+                    {this.state.companyName}
+                    <br />
+                    {this.state.contactStreetAddress}
+                    <br />
+                    {this.state.contactCity}{" "}
+                    {getInitial(this.state.contactState)}
+                    {this.state.contactZip}
+                    <br />
+                  </div>
+
+                  <div style={styles.quote}>
+                    <b>QUOTATION</b> # 1023 &nbsp; <br />
+                    <b>DATE</b>{" "}
+                    <Moment format="YYYY/MM/DD" date={this.state.startDate} />{" "}
+                    &nbsp; <br />
+                  </div>
+                </div>
+
+                <br />
+                <br />
+                <br />
+                <br />
+                <hr style={styles.quotation} />
+
+                <div>
+                  <div style={styles.billedTo}>
+                    <b>QUOTATION ISSUED BY</b> &nbsp;
+                    {this.state.quotationIssuedBy}
+                    <br />
+                  </div>
+
+                  <div style={styles.quote}>
+                    <b>QUOTATION VALID THRU</b>&nbsp;
+                    <Moment
+                      format="YYYY/MM/DD"
+                      date={this.state.validThru}
+                    />{" "}
+                    <br />
+                  </div>
+                </div>
+
+                <br />
+                <br />
+
+                <table id="customers">
+                  <tr>
+                    <th>ACTIVITY</th>
+                    <th>QTY</th>
+                    <th>RATE</th>
+                    <th>AMOUNT</th>
+                  </tr>
+                  <tbody>
+                    {this.state.requestedServiceRows.length > 0
+                      ? this.state.requestedServiceRows
+                      : ""}
+                  </tbody>
+                </table>
+
+                <br />
+                <hr style={styles.quotation} />
+                <div style={styles.quote}>
+                  <span style={{ fontSize: "1.25em" }}>
+                    <b>TOTAL</b> <b>{"$" + this.state.totalCost.toFixed(2)}</b>
+                  </span>
+                </div>
+                <br />
+                <br />
+                <div>
+                  <div style={styles.billedTo}>
+                    <b>Accepted by</b>
+                  </div>
+
+                  <div style={styles.quote}>
+                    <b>Accepted Date</b>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-
-          <div style = {styles.quote}>
-          <b>QUOTATION</b> # 1023 &nbsp; <br />
-          <b>DATE</b> <Moment format="YYYY/MM/DD" date={this.state.startDate}/> &nbsp; <br />
-          </div>
-        </div>
-
-        <br />
-        <br />
-        <br />
-        <br />
-        <hr style = {styles.quotation}/>
-
-        <div>
-          <div style = {styles.billedTo}>
-          <b>QUOTATION ISSUED BY</b> &nbsp;{this.state.quotationIssuedBy}<br/>
-          </div>
-
-          <div style = {styles.quote}>
-          <b>QUOTATION VALID THRU</b>&nbsp; 
-          06/07/2017 <br />
-          </div>
-        </div>
-
-        <br />
-        <br />
-
-        <table id="customers">
-          <tr>
-            <th>Company</th>
-            <th>Contact</th>
-            <th>Country</th>
-          </tr>
-          <tr>
-            <td>Königlich Essen</td>
-            <td>Philip Cramer</td>
-            <td>Germany</td>
-          </tr>
-          <tr>
-            <td>Laughing Bacchus Winecellars</td>
-            <td>Yoshi Tannamuri</td>
-            <td>Canada</td>
-          </tr>
-          <tr>
-            <td>Magazzini Alimentari Riuniti</td>
-            <td>Giovanni Rovelli</td>
-            <td>Italy</td>
-          </tr>
-          <tr>
-            <td>North/South</td>
-            <td>Simon Crowther</td>
-            <td>UK</td>
-          </tr>
-        </table>
-
-        <br />
-        <hr style = {styles.quotation}/>
-        <div style = {styles.quote}><b>TOTAL</b> VALUE</div>
-        <br/>
-        <div>
-          <div style = {styles.billedTo}>
-            <b>Accepted by</b>
-          </div>
-
-          <div style = {styles.quote}>
-            <b>Accepted Date</b>
-          </div>
-        </div>
-        
-</div>
-        </div>
-        </div>
         </Container>
       </div>
     );

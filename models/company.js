@@ -10,8 +10,8 @@ module.exports = function(sequelize, DataTypes) {
         agency: {
             type: DataTypes.STRING
         },
-        contract_clients: {
-            type: DataTypes.STRING
+        contract_client: {
+            type: DataTypes.BOOLEAN
         }          
     });
     return Company;

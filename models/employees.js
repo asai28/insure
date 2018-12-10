@@ -11,6 +11,10 @@ module.exports = function(sequelize, DataTypes) {
         EMP_STATUS: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        PASSWORD: {
+            type: DataTypes.STRING,
+            allowNull: false
         }
     });
     return Employee;

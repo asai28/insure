@@ -7,7 +7,7 @@ module.exports = function(sequelize, DataTypes) {
             defaultValue : "United States",
             allowNull: false
         },
-        topic: {
+        service: {
             type: DataTypes.STRING,
             allowNull: false
         },
@@ -34,8 +34,39 @@ module.exports = function(sequelize, DataTypes) {
         },
         contactState: DataTypes.STRING,
         contactCity: DataTypes.STRING,
-        equipmentsSelectedSite: DataTypes.TEXT,
-        equipmentsSelectedTraining: DataTypes.TEXT,
+        Laptop: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        projectorScreen: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        Table:  {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        trainingKit: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        forkliftTrainingKit: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        CPRmannequins : {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        firstAidAEDKit:{
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        RespiratorFitTestKit: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
+        },
+        instructions: DataTypes.TEXT
     });
     return Service;
   };

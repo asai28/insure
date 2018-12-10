@@ -23,7 +23,8 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING
         },
         contactIsMain: {
-            type: DataTypes.BOOLEAN
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
         }          
     });
     return Contact;

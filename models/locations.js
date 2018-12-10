@@ -20,7 +20,8 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING
         },
         contactIsMainLocation: {
-            type: DataTypes.BOOLEAN
+            type: DataTypes.BOOLEAN,
+            defaultValue: false
         }          
     });
     return Location;
