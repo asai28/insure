@@ -1,32 +1,27 @@
+const uuid = require('uuid/v4'); // ES5
+
+'use strict';
 module.exports = function(sequelize, DataTypes) {
     var Service = sequelize.define("Service", {
+        quoteNumber: {
+            type: DataTypes.UUID,
+            defaultValue: DataTypes.UUIDV1,
+            primaryKey: true
+          },
         startDate: DataTypes.DATE,
+        validThru: DataTypes.DATE,
         companyName: DataTypes.STRING,
-        country: {
-            type: DataTypes.STRING,
-            defaultValue : "United States",
-            allowNull: false
-        },
-        service: {
-            type: DataTypes.STRING,
-            allowNull: false
-        },
+        paymentBy: DataTypes.STRING,
         producer: {
             type: DataTypes.STRING
         },
+        contactPerson: DataTypes.STRING,
         contactPhone: DataTypes.STRING,
         contactCellPhone: DataTypes.STRING,
         contactEmail: DataTypes.STRING,
-        state: {
-            type: DataTypes.STRING,
-            defaultValue : "Arizona",
-            allowNull: false
-        },
-        streetAddress: DataTypes.STRING,
-        city: DataTypes.STRING,
-        zip: DataTypes.STRING,
-        contactStreetAddress : DataTypes.STRING,
-        contactZip : DataTypes.STRING,
+        contactStreetAddress: DataTypes.STRING,
+        contactCity: DataTypes.STRING,
+        contactZip: DataTypes.STRING,
         contactCountry: {
             type: DataTypes.STRING,
             defaultValue : "United States",
@@ -66,7 +61,9 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.BOOLEAN,
             defaultValue: false
         },
-        instructions: DataTypes.TEXT
+        instructions: DataTypes.TEXT,
+        quotationIssuedBy: DataTypes.STRING,
+        additionalEquipment: DataTypes.STRING
     });
     return Service;
   };

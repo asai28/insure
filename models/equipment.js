@@ -1,12 +1,11 @@
 module.exports = function(sequelize, DataTypes) {
     var Equipment = sequelize.define("EquipmentVsTopic", {
-        topic: {
-            type: DataTypes.STRING,
-            defaultValue: false
-        },
         serviceUnits: {
             type: DataTypes.FLOAT,
             defaultValue: 0.0
+        },
+        topic:{
+            type: DataTypes.STRING
         },
         costOfService: {
             type: DataTypes.DECIMAL(10,2),

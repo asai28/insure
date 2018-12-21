@@ -53,19 +53,24 @@ export default{
     newServiceRequest: function(item){
         return axios.post("/api/requestedServices", item)
     },
-    getServiceRequests: function(item){
+    getServiceRequests: function(){
         return axios.get("/api/requestedServices")
     },
-    deleteServiceRequests: function(companyName){
-        return axios.delete("/api/requestedServices/"+companyName)
+    deleteServiceRequests: function(){
+        return axios.delete("/api/requestedServices/")
     },
     deleteService: function(serviceName){
         return axios.delete("/api/requestedServices/" + serviceName)
     },
     getListOfServices: function(){
         return axios.get("/api/listOfServices")
+    },
+    addTask: function(item){
+        return axios.post("/api/taskList", item)
+    },
+    getEmployeeTasks: function(employee){
+        return axios.get("/api/tasklist/" + employee)
     }
-
 }
 
 //https://cors-anywhere.herokuapp.com/

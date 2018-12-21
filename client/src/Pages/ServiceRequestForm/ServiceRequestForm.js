@@ -1,21 +1,7 @@
 import React from "react";
-/*Imports required for Form Group */
-import {
-  Collapse,
-  Navbar,
-  NavbarToggler,
-  NavbarBrand,
-  Nav,
-  NavItem,
-  NavLink,
-  UncontrolledDropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem
-} from "reactstrap";
 
 /*Imports for modals from reactstrap */
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter,Alert } from "reactstrap";
 
 /*Imports required for Form Group */
 import { Form, FormGroup, Label, Input } from "reactstrap";
@@ -36,7 +22,7 @@ import "moment-timezone";
 import "react-datepicker/dist/react-datepicker.css";
 
 //Validation icons
-import { FaPlus, FaCheckCircle, FaTimesCircle, FaTrash} from "react-icons/fa";
+import { FaPlus, FaCheckCircle, FaTimesCircle, FaTrash, FaTimes} from "react-icons/fa";
 
 //Importing cities and states for countries
 import cities from "../../utils/cities.json";
@@ -108,8 +94,6 @@ const styles = {
 };
 
 //Initialized outside to add new equipments on the fly
-var equipmentsSelectedSite = [];
-var equipmentsForTraining = [];
 var equipmentsAlwaysOnSite = [
   "Laptop",
   "projectorScreen",
@@ -120,7 +104,6 @@ var equipmentsAlwaysOnSite = [
   "firstAidAEDKit",
   "Handouts"
 ];
-var equipments = [];
 var equipmentIDs = [
   "Laptop",
   "projectorScreen",
@@ -142,12 +125,6 @@ var employees = [];
 var getCompanyDetails = [];
 var getCompanyContacts = [];
 var getCompanyLocations = [];
-var topicsVsEquipments = [];
-
-//Get all requests in the same request form
-var requestedServices = [];
-var listOfServices = [];
-var listOfNonTrainingServices = [];
 
 //Get all US states
 var us_states = [];
@@ -232,13 +209,20 @@ export default class Example extends React.Component {
       billableService: true,
       alternateName: "",
       costForService: 0.0,
+      requestedServices: [],
       requestedServiceRows: [],
       viewServiceRows: [],
       totalCost: 0,
       viewServiceModal: false,
       showTopics: false,
       popoverOpen: false,
-      description: ""
+      description: "",
+      companyMobileContacts: [],
+      companyOfficeContacts: [],
+      companyLocations: [],
+      listOfServices: [],
+      additionalEquipments: [],
+      quotationNumber: ""
     };
     this.validateEmail = this.validateEmail.bind(this);
     this.validatePhone = this.validatePhone.bind(this);
@@ -264,34 +248,39 @@ export default class Example extends React.Component {
     this.removeServices = this.removeServices.bind(this);
     this.togglePopOver = this.togglePopOver.bind(this);
   }
-
+  
   componentDidMount = () => {
     this.getEmployees();
     this.getCompanies();
+    document.getElementById('addEquipment').style.display = "none";
   };
 
   componentWillMount = () => {
     API.getTopicBasedEquipments()
       .then(res => {
-        //console.log(res.data);
-        topicsVsEquipments = res.data;
+        this.setState({
+          topicsVsEquipments : res.data
+        });
         console.log("topic vs equipments loaded!");
       })
       .catch(err => console.log(err));
     API.getListOfServices()
     .then(res => {
       console.log(res);
-      listOfServices = res.data;
+      this.setState({
+        listOfServices :res.data
+      })
+      
       console.log("services list loaded!");
     })
     .catch(err => console.log(err));
   };
 
   getPriceAndQuantity = () => {
-    var result = topicsVsEquipments.filter(
+    var result = this.state.topicsVsEquipments.filter(
       element => element.topic === this.state.topic
     )[0];
-    if (result !== {} && this.state.topic !== "") {
+    if (result !== {} && this.state.topic.trim() !== "") {
       document.getElementById("numServiceUnits").value = result.serviceUnits;
       document.getElementById("durationInMin").value = result.DurationInMin;
       document.getElementById("costForService").value = result.costOfService;
@@ -311,13 +300,14 @@ export default class Example extends React.Component {
       });
     }
 
-    var result2 = listOfServices
+    var result2 = this.state.listOfServices
     .filter(element => element.service === this.state.service)[0];
-    if (result2 !== undefined && this.state.service !== "" && this.state.service !== "Training") {
+    if (result2 !== undefined && this.state.service.trim() !== "" && this.state.service !== "Training") {
       document.getElementById("numServiceUnits").value = result2.qty;
       document.getElementById("costForService").value = result2.cost;
 
       this.setState({
+        service: this.state.service,
         showTopics: false,
         description: result2.description
       });
@@ -329,9 +319,9 @@ export default class Example extends React.Component {
     var checkedEquipments = [];
     var row = {};
     if (this.state.companyName.trim() !== "") {
-      for (let i = 0; i < topicsVsEquipments.length; ++i) {
-        if (topicsVsEquipments[i].topic === this.state.topic) {
-          row = topicsVsEquipments[i];
+      for (let i = 0; i < this.state.topicsVsEquipments.length; ++i) {
+        if (this.state.topicsVsEquipments[i].topic === this.state.topic) {
+          row = this.state.topicsVsEquipments[i];
           break;
         }
       }
@@ -385,11 +375,12 @@ export default class Example extends React.Component {
   addService = () => {
     var item = {
       companyName: this.state.companyName,
-      topic: this.state.topic,
-      billable: document.getElementById("billable").checked,
-      qty: document.getElementById("numServiceUnits").value,
-      alternateName: this.state.alternateName.length === 0 ? this.state.topic : this.state.alternateName,
-      cost: this.state.costForService
+      service: this.state.service,
+      billable: this.state.billableService,
+      qty: document.getElementById("numServiceUnits").value === undefined ? 0 : parseFloat(document.getElementById("numServiceUnits").value),
+      alternateName: this.state.alternateName.length === 0 ? this.state.service : this.state.alternateName,
+      cost: document.getElementById("costForService").value === undefined ? 0 : parseFloat(document.getElementById("costForService").value),
+      serviceDescription: this.state.description
     };
 
     console.log(item);
@@ -397,11 +388,14 @@ export default class Example extends React.Component {
     API.newServiceRequest(item)
       .then(res => {
         console.log(res);
-        this.setState({
-          topic: "",
-          billable: false,
-          alternateName: this.state.topic
-        });
+        // this.setState({
+        //   topic: "",
+        //   service: "",
+        //   description: "",
+        //   costForService: 0,
+        //   billable: false,
+        //   alternateName: this.state.topic
+        // });
       })
       .catch(err => console.log(err));
 
@@ -410,14 +404,14 @@ export default class Example extends React.Component {
   };
 
   saveServices = () => {
-    requestedServices = [];
     API.getServiceRequests()
       .then(res => {
-        if (this.state.topic !== "") {
+        if (this.state.service.trim() !== "") {
           this.addService();
         }
-        requestedServices = res.data;
-        console.log(requestedServices);
+        this.setState({
+          requestedServices : res.data
+        })
         this.setState({
           requestedServiceRows: this.getServices()
         });
@@ -427,7 +421,7 @@ export default class Example extends React.Component {
   };
 
   getServices = () => {
-    return requestedServices
+    return this.state.requestedServices
       .filter(x => x.billable === true)
       .map((x, index) => (
         <tr key={"serviceRequest" + (index + 1)}>
@@ -446,9 +440,11 @@ export default class Example extends React.Component {
     var result = [];
     API.getServiceRequests()
       .then(res => {
-        requestedServices = res.data;
-        console.log("remove services",requestedServices);
-        result =  requestedServices
+        this.setState({
+          requestedServices : res.data
+        })
+        console.log("remove services",this.state.requestedServices);
+        result =  this.state.requestedServices
           .map((x, index) => (
             <tr key={"serviceRequest" + (index + 1)} id = {"serviceRequest" + (index + 1)}>
               <td>{x.alternateName}</td>
@@ -476,7 +472,7 @@ export default class Example extends React.Component {
     API.getCompany()
       .then(res => {
         for (let i = 0; i < res.data.length; ++i) {
-          if (uniqueCompanies.indexOf(res.data[i].companyName) === -1 && res.data[i].companyName !== "") {
+          if (uniqueCompanies.indexOf(res.data[i].companyName) === -1 && res.data[i].companyName.trim() !== "") {
             uniqueCompanies.push(res.data[i].companyName);
           }
         }
@@ -578,37 +574,54 @@ export default class Example extends React.Component {
       })
       .catch(err => console.log(err));
 
-    API.getCompanyContacts(this.state.companyName)
-      .then(res => {
-        getCompanyContacts = res.data;
-      })
-      .catch(err => console.log(err));
+      if(this.state.companyName.trim() !== ""){
+        API.getCompanyContacts(this.state.companyName)
+          .then(res => {
+            getCompanyContacts = res.data;
+            this.setState({
+              companyMobileContacts: res.data.filter(x => x.contactMobilePhone !== ""),
+              companyOfficeContacts: res.data.filter(x => x.contactOfficePhone !== "")
+            })
+          })
+          .catch(err => console.log(err));
+          API.getCompanyLocations(this.state.companyName)
+            .then(res => {
+              getCompanyLocations = res.data;
+              this.setState({
+                companyLocations: res.data
+              })
+            })
+            .catch(err => console.log(err));
+      }
 
-    API.getCompanyLocations(this.state.companyName)
-      .then(res => {
-        getCompanyLocations = res.data;
-      })
-      .catch(err => console.log(err));
 
     this.getAvailableEquipments();
 
     API.getCompanyEquipments(this.state.companyName)
       .then(res => {
-        var result = res.data;
-        this.setState({
-          Laptop: this.state.Laptop && !result.Laptop,
-          projectorScreen:
-            this.state.projectorScreen && !result.projectorScreen,
-          Table: this.state.Table && !result.Table,
-          trainingKit: this.state.trainingKit && !result.trainingKit,
-          forkliftTrainingKit:
-            this.state.forkliftTrainingKit && !result.forkliftTrainingKit,
-          CPRmannequins: this.state.CPRmannequins && !result.CPRmannequins,
-          firstAidAEDKit: this.state.firstAidAEDKit && !result.firstAidAEDKit,
-          RespiratorFitTestKit:
-            this.state.RespiratorFitTestKit && !result.RespiratorFitTestKit,
-          Handouts: this.state.Handouts && !result.Handouts
-        });
+        if(res.data.length > 0 && this.state.companyName.length > 0 ){
+          var result = res.data[0];
+          this.setState({
+            Laptop: this.state.Laptop || !result.Laptop,
+            projectorScreen: this.state.projectorScreen || !result.projectorScreen,
+            Table: this.state.Table || !result.Table,
+            trainingKit: this.state.trainingKit || !result.trainingKit,
+            forkliftTrainingKit: this.state.forkliftTrainingKit || !result.forkliftTrainingKit,
+            CPRmannequins: this.state.CPRmannequins || !result.CPRmannequins,
+            firstAidAEDKit: this.state.firstAidAEDKit || !result.firstAidAEDKit,
+            RespiratorFitTestKit: this.state.RespiratorFitTestKit || !result.RespiratorFitTestKit,
+            Handouts: this.state.Handouts || !result.Handouts
+          });
+          document.getElementById('Laptop').checked = this.state.Laptop;
+          document.getElementById('projectorScreen').checked = this.state.projectorScreen;
+          document.getElementById('Table').checked = this.state.Table;
+          document.getElementById('trainingKit').checked = this.state.trainingKit;
+          document.getElementById('forkliftTrainingKit').checked = this.state.forkliftTrainingKit;
+          document.getElementById('CPRmannequins').checked = this.state.CPRmannequins;
+          document.getElementById('firstAidAEDKit').checked = this.state.firstAidAEDKit;
+          document.getElementById('RespiratorFitTestKit').checked = this.state.RespiratorFitTestKit;
+          document.getElementById('Handouts').checked = this.state.Handouts;
+        }
       })
       .catch(err => console.log(err));
   };
@@ -616,14 +629,14 @@ export default class Example extends React.Component {
   validatePhone = () => {
     var re = RegExp(/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
     this.setState({
-      validPhone: re.test(this.state.contactPhone)
+      validPhone: re.test(this.state.contactPhone) || isNaN(this.state.contactPhone)
     });
   };
 
   validateCellPhone = () => {
     var re = RegExp(/^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/);
     this.setState({
-      validCellPhone: re.test(this.state.contactCellPhone)
+      validCellPhone: re.test(this.state.contactCellPhone) || isNaN(this.state.contactPhone)
     });
   };
 
@@ -660,39 +673,176 @@ export default class Example extends React.Component {
   handleSubmit = e => {
     e.preventDefault();
     this.setState({
-      companyNames: this.state.companyNames.concat(this.state.companyName)
+      requestedServiceRows: this.getServices()
     });
 
     var item = {
-      startDate: this.state.startDate,
       companyName: this.state.companyName,
-      country: this.state.country,
-      topic: this.state.topic,
+      startDate: this.state.startDate,
+      validThru: this.state.validThru,
+      paymentBy: this.state.paymentForTraining,
+      producer: this.state.producer,
+      contactPerson: this.state.contactName,
       contactPhone: this.state.contactPhone,
       contactCellPhone: this.state.contactCellPhone,
       contactEmail: this.state.contactEmail,
-      state: this.state.state,
-      streetAddress: this.state.streetAddress,
-      city: this.state.city,
-      zip: this.state.zip,
-      producer: this.state.producer,
-      contactStreetAddress: this.state.contactStreetAddress,
-      contactZip: this.state.contactZip,
-      contactCountry: this.state.contactCountry,
       contactState: this.state.contactState,
+      contactStreetAddress: this.state.contactStreetAddress,
       contactCity: this.state.contactCity,
-      instructions: this.state.instructions,
-      billableService: this.state.billableService
+      contactZip: this.state.contactZip,
+      contactCountry: this.state.country,
+      //Equipment needed at site
+      Laptop: this.state.Laptop,
+      projectorScreen: this.state.projectorScreen,
+      Table: this.state.Table,
+      trainingKit: this.state.trainingKit,
+      forkliftTrainingKit: this.state.forkliftTrainingKit,
+      CPRmannequins: this.state.CPRmannequins,
+      firstAidAEDKit: this.state.firstAidAEDKit,
+      RespiratorFitTestKit: this.state.RespiratorFitTestKit,
+      Handouts: this.state.Handouts,
+      quotationIssuedBy: this.state.quotationIssuedBy,
+      instructions: this.state.instructions
     };
+    
     API.postService(item)
-      .then(res => {
-        console.log(res);
-        API.deleteServiceRequests(this.state.companyName)
-          .then(res => console.log("Deleted rows"))
+    .then(res => {
+      console.log(res);
+      this.setState({
+        quotationNumber: res.data.quoteNumber,
+        quotationIssuedBy: res.data.quotationIssuedBy
+      });
+      API.getServiceRequests()
+      .then(res1 => {
+          console.log(res.data.quotationIssuedBy);
+          console.log(res1);
+          API.addTask({
+            quotationNumber: this.state.quotationNumber,
+            service: "Approve quote " + this.state.quotationNumber,
+            client: this.state.companyName,
+            instructions: this.state.instructions,
+            startDate: this.state.startDate, //sort
+            validThru: this.state.validThru,
+            quotationIssuedBy: res.data.quotationIssuedBy
+          })
+          .then(res2 => {
+            console.log(res2.data);
+
+                if(res1.data.length > 0){
+                  for(let i = 0; i < res1.data.length; ++i ){
+                    API.addTask({
+                      quotationNumber: this.state.quotationNumber,
+                      service: res1.data[i].service,
+                      client: res1.data[i].companyName,
+                      instructions: this.state.instructions,
+                      startDate: this.state.startDate, //sort
+                      validThru: this.state.validThru,
+                      qty: res1.data[i].qty,
+                      serviceDescription: res1.data[i].serviceDescription,
+                      quotationIssuedBy: res.data.quotationIssuedBy
+                    })
+                    .then(res3 => {console.log("Added a task")})
+                    .catch(err => console.log(err));
+                  }
+                }
+                console.log("Deleted rows");
+                console.log("Added a task to accept quote as well!");
+                document.getElementById("serviceRequestForm").reset();
+                this.setState({
+              startDate: moment(),
+              validThru: moment()
+                .add(90, "days")
+                .format("YYYY-MM-DD"),
+                newContractClient: false,
+              companyName: "",
+              newCompanyName: "",
+              companyNames: services.companyName,
+              country: "United States",
+              topic: "",
+              service: "",
+              producer: "",
+              sameLocAsTraining: false,
+              validCompanyName: false,
+              validPhone: false,
+              validEmail: false,
+              validCellPhone: false,
+              validZIP: false,
+              contactName: "",
+              contactPhone: "",
+              contactCellPhone: "",
+              contactEmail: "",
+              state: "",
+              streetAddress: "",
+              city: "",
+              zip: "",
+              contactStreetAddress: "",
+              contactZip: "",
+              contactCountry: "United States",
+              contactState: "",
+              contactCity: "",
+              //equipmentsForSite: ["Laptop", "Projector Screen", "TV monitor", "Table", "Electrical power socket with extension cord"],
+              equipmentsSelectedSite: [],
+              equipmentsSelectedTraining: [],
+              //equipmentsForTraining : ["Laptop", "Projector Screen", "TV monitor", "Table", "Electrical power socket with extension cord", "Forklift training kit", "CPR mannequins", "First aid training bag", "AED training device", "Handouts"],
+              equipments: [
+                "Laptop",
+                "Projector Screen",
+                "Table",
+                "Training Kit (Green Duffle Bag)",
+                "Forklift Training Kit (Grey Duffle Bag)",
+                "CPR mannequins",
+                "First Aid & AED Kit (Red Backpack)",
+                "Handouts"
+              ],
+              Laptop: false,
+              projectorScreen: false,
+              Table: false,
+              trainingKit: false,
+              forkliftTrainingKit: false,
+              CPRmannequins: false,
+              firstAidAEDKit: false,
+              RespiratorFitTestKit: false,
+              Handouts: false,
+              active: true,
+              addOn: "",
+              error: {},
+              modal: false,
+              quotationIssuedBy: "",
+              instructions: "",
+              serviceModal: false,
+              billableService: true,
+              alternateName: "",
+              costForService: 0.0,
+              requestedServices: [],
+              requestedServiceRows: [],
+              viewServiceRows: [],
+              totalCost: 0,
+              viewServiceModal: false,
+              showTopics: false,
+              popoverOpen: false,
+              description: "",
+              companyMobileContacts: [],
+              companyOfficeContacts: [],
+              companyLocations: [],
+              listOfServices: [],
+              additionalEquipments: [],
+              quotationNumber: ""
+            });
+            API.deleteServiceRequests()
+          .then(() => {
+            console.log("Refresh services table");
+          })
           .catch(err => console.log(err));
-        document.getElementById("serviceRequestForm").reset();
-      })
-      .catch(err => console.log(err));
+          })
+              .catch(err => console.log(err));
+            
+            })
+            .catch(err => console.log(err));
+
+            
+        })
+        .catch(err => console.log(err));
+        
   };
 
   handleInputChange = e => {
@@ -754,6 +904,23 @@ export default class Example extends React.Component {
 
         <Container className="mt-3">
           <Form id="serviceRequestForm">
+          <FormGroup>
+              <Label for="quotationIssuedBy">Quotation Issued By</Label>
+              <Input
+                type="select"
+                name="quotationIssuedBy"
+                id="quotationIssuedBy"
+                onChange={this.handleInputChange}
+              >
+              <option value="">Choose Quotation Issued By</option>
+                {employees.map((x, index) => (
+                  <option key={"emp" + index} value={x}>
+                    {x}
+                  </option>
+                ))}
+              </Input>
+            </FormGroup>
+
             <FormGroup>
               <Label for="companyName">Company Name</Label>
               <Input
@@ -1180,12 +1347,48 @@ export default class Example extends React.Component {
                           <option name = "Training" value="Training" onClick = {() => {
                             this.setState({showTopics: true});
                           }}>Training</option>
-                          {listOfServices.map(x => (
-                            <option name="service" value={x.service}>
+                          {this.state.listOfServices.map(x => (
+                            <option value={x.service}>
                               {x.service}
                             </option>
                           ))}
                         </Input>
+                        {(this.state.service === "") ? <div>
+                        <Label for="newService">New Service? Enter it here</Label>
+                        <Input
+                          type="text"
+                          name="service"
+                          id="service"
+                          onChange={this.handleInputChange}
+                          placeholder = "Enter New Service's Name"
+                        />
+                        <Label for="newServiceDescription">Enter new service's description</Label>
+                        <Input
+                          type="textarea"
+                          name="description"
+                          id="description"
+                          onChange={this.handleInputChange}
+                          placeholder = "Enter New Service's Description"
+                        />
+                        <Label for="newServiceCostPerUnit">Enter new service's cost per unit</Label>
+                        <Input
+                          type="text"
+                          name="costForService"
+                          id="costForService"
+                          onChange={this.handleInputChange}
+                          placeholder = "Enter New Service's cost per unit"
+                        />
+                        </div> : <div>
+                        <br/>
+                      <Button id="Popover1" onClick={this.togglePopOver}>
+                        Read more about the Service
+                      </Button>
+                      <Popover placement="bottom" isOpen={this.state.popoverOpen} target="Popover1" toggle={this.togglePopOver}>
+                        <PopoverHeader id = "serviceName">{this.state.service}</PopoverHeader>
+                        <PopoverBody id = "description">{this.state.description}</PopoverBody>
+                      </Popover>
+                      </div>}
+                        
                     </FormGroup>
                     {this.state.showTopics === true? <div>
                       <FormGroup>
@@ -1200,7 +1403,7 @@ export default class Example extends React.Component {
                           <option name="topic" value={""}>
                             Choose a topic
                           </option>
-                          {topicsVsEquipments.map(x => (
+                          {this.state.topicsVsEquipments.map(x => (
                             <option name="topic" value={x.topic}>
                               {x.topic}
                             </option>
@@ -1227,15 +1430,7 @@ export default class Example extends React.Component {
                           onChange={this.handleInputChange}
                         />
                       </FormGroup>
-                      </div> : <div>
-                      <Button id="Popover1" onClick={this.togglePopOver}>
-                        Read more about the Service
-                      </Button>
-                      <Popover placement="bottom" isOpen={this.state.popoverOpen} target="Popover1" toggle={this.togglePopOver}>
-                        <PopoverHeader id = "serviceName">{this.state.service}</PopoverHeader>
-                        <PopoverBody id = "description">{this.state.description}</PopoverBody>
-                      </Popover>
-                      </div>}
+                      </div> : ""}
                       <br/>
                       <FormGroup>
                         <Label for="billable">Billable Service</Label> <br />
@@ -1320,51 +1515,6 @@ export default class Example extends React.Component {
                 </Modal>
               </div>
               <br />
-              {/* <Label for="topic">View or Delete Services</Label>
-              <div>
-                <Button color="success" onClick={this.toggleViewServicesModal}>
-                  View or delete services
-                </Button>
-                <Modal
-                  isOpen={this.state.viewServiceModal}
-                  toggle={this.toggleViewServicesModal}
-                  className={this.props.className}
-                >
-                  <ModalHeader toggle={this.toggleViewServicesModal}>
-                  View or delete services
-                  </ModalHeader>
-                  <ModalBody>
-                    <table id="customers">
-                      <tr>
-                        <th>ACTIVITY</th>
-                        <th>QTY</th>
-                        <th>RATE</th>
-                        <th>AMOUNT</th>
-                        <th>DELETE</th>
-                      </tr>
-                      <tbody>
-                        {this.state.viewServiceRows.length > 0
-                          ? this.state.viewServiceRows
-                          : ""}
-                      </tbody>
-                    </table>
-                  </ModalBody>
-                  <ModalFooter>
-                    <Button
-                      color="primary"
-                      onClick={this.toggleViewServicesModal}
-                    >
-                      Save changes
-                    </Button>{" "}
-                    <Button
-                      color="secondary"
-                      onClick={this.toggleViewServicesModal}
-                    >
-                      Cancel
-                    </Button>
-                  </ModalFooter>
-                </Modal>
-              </div> */}
             </Form>
             {this.state.topic === "Training" ? (
               <FormGroup className="training" id="training">
@@ -1482,7 +1632,7 @@ export default class Example extends React.Component {
               <Input
                 type="text"
                 name="contactName"
-                id="contactName"
+                id="contactNameNew"
                 placeholder="Enter other contact's name"
                 onChange={this.handleInputChange}
               />
@@ -1512,7 +1662,7 @@ export default class Example extends React.Component {
               <Input
                 type="text"
                 name="contactEmail"
-                id="contactEmail"
+                id="contactEmailNew"
                 placeholder="Enter other contact's email ID"
                 onChange={this.handleInputChange}
               />
@@ -1526,9 +1676,21 @@ export default class Example extends React.Component {
               <Label for="contactPhone">Contact Person's Contact Number</Label>
               <br />
               <Input
-                type="text"
+                type="select"
                 name="contactPhone"
                 id="contactPhone"
+                placeholder="Valid phone format example +1 (999) 999-999"
+                onChange={this.handleInputChange}
+              >
+              <option value="">Choose Office Number</option>
+              {this.state.companyOfficeContacts.map(x => <option value={x.contactOfficePhone}>{x.contactOfficePhone}</option>)}
+              </Input>
+              <Label for="contactPhone">Contact Person's Office Number not listed? Enter it here</Label>
+              <br />
+              <Input
+                type="text"
+                name="contactPhone"
+                id="contactPhoneNew"
                 placeholder="Valid phone format example +1 (999) 999-999"
                 onChange={this.handleInputChange}
               />
@@ -1543,10 +1705,23 @@ export default class Example extends React.Component {
                 Contact Person's Cell phone number
               </Label>
               <Input
+                type="select"
+                name="contactCellPhone"
+                id="contactCellPhone"
+                placeholder="Valid phone format example +1 (999) 999-999"
+                onChange={this.handleInputChange}
+              >
+              <option value="">Choose Mobile Phone</option>
+              {this.state.companyMobileContacts.map(x => <option value={x.contactMobilePhone}>{x.contactMobilePhone}</option>)}
+              </Input>
+              <Label for="contactCell">
+                Contact Person's Cell phone number not listed? Enter it here
+              </Label>
+              <Input
                 type="text"
                 name="contactCellPhone"
                 id="contactCellPhone"
-                placeholder="Enter the cell number of the contact"
+                placeholder="Valid phone format example +1 (999) 999-999"
                 onChange={this.handleInputChange}
               />
               {this.state.validCellPhone ? (
@@ -1575,11 +1750,11 @@ export default class Example extends React.Component {
                       });
                       if (this.state.sameLocAsTraining) {
                         this.setState({
-                          contactStreetAddress: this.state.streetAddress,
-                          contactZip: this.state.zip,
-                          contactCountry: this.state.country,
-                          contactState: this.state.state,
-                          contactCity: this.state.city
+                          contactStreetAddress: this.state.contactStreetAddress,
+                          contactZip: this.state.contactZip,
+                          contactCountry: this.state.contactCountry,
+                          contactState: this.state.contactState,
+                          contactCity: this.state.contactCity
                         });
                       }
                     }}
@@ -1597,6 +1772,18 @@ export default class Example extends React.Component {
                   <br />
                   <Label for="streetAddress">Street Address</Label>
                   <Input
+                    type="select"
+                    name="contactStreetAddress"
+                    id="contactStreetAddress"
+                    placeholder="Street Address"
+                    onChange={this.handleInputChange}>
+                    <option value="">Choose Street Address</option>
+                    {this.state.companyLocations.filter(x => x.contactStreetAddress !== undefined || x.contactStreetAddress.trim() !== "").map(
+                      y => <option value={y.contactStreetAddress}>{y.contactStreetAddress}</option>
+                    )}
+                  </Input>
+                  <Label for="streetAddress">Contact Street Address not listed? Enter it here</Label>
+                  <Input
                     type="text"
                     name="contactStreetAddress"
                     id="contactStreetAddress"
@@ -1604,6 +1791,18 @@ export default class Example extends React.Component {
                     onChange={this.handleInputChange}
                   />
                   <Label for="contactZip">ZIP</Label>
+                  <Input
+                    type="select"
+                    name="contactZip"
+                    id="contactZip"
+                    placeholder="ZIP code"
+                    onChange={this.handleInputChange}>
+                    <option value="">Choose ZIP</option>
+                    {this.state.companyLocations.filter(x => x.contactZIP !== undefined || x.contactZIP.trim() !== "").map(
+                      y => <option value={y.contactZIP}>{y.contactZIP}</option>
+                    )}
+                  </Input>
+                  <Label for="contactZip">ZIP not listed? Enter it here</Label>
                   <Input
                     type="text"
                     name="contactZip"
@@ -1733,11 +1932,18 @@ export default class Example extends React.Component {
                   <FaPlus
                     onClick={() => {
                       if (this.state.addOn.trim() !== "") {
-                        equipments.push(this.state.addOn.trim());
+                        this.state.additionalEquipments.push(this.state.addOn.trim());
+                        document.getElementById('addEquipment').style.display = "block";
+                      }
+                      else{
+                        document.getElementById('addEquipment').style.display = "none";
                       }
                     }}
                   />{" "}
                 </div>
+                <Alert color="success" id="addEquipment">New equipment added! <span style={{'float':'right'}} onClick = {() => {
+                  document.getElementById('addEquipment').style.display = "none";
+                }}><FaTimes /></span></Alert>
               </FormGroup>
             </div>
             <FormGroup>
@@ -1748,24 +1954,11 @@ export default class Example extends React.Component {
                 type="textarea"
                 name="instructions"
                 id="instructions"
+                placeholder="Instructions"
                 onChange={this.handleInputChange}
               />
             </FormGroup>
-            <FormGroup>
-              <Label for="quotationIssuedBy">Quotation Issued By</Label>
-              <Input
-                type="select"
-                name="quotationIssuedBy"
-                id="quotationIssuedBy"
-                onChange={this.handleInputChange}
-              >
-                {employees.map((x, index) => (
-                  <option key={"emp" + index} value={x}>
-                    {x}
-                  </option>
-                ))}
-              </Input>
-            </FormGroup>
+            
             <Button
               name="active"
               onClick={this.handleSubmit}
@@ -1864,7 +2057,7 @@ export default class Example extends React.Component {
                     <th>AMOUNT</th>
                   </tr>
                   <tbody>
-                    {this.state.requestedServiceRows.length > 0
+                    {this.state.requestedServices.length > 0
                       ? this.state.requestedServiceRows
                       : ""}
                   </tbody>

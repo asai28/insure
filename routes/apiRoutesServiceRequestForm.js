@@ -1,4 +1,4 @@
-var db = require("../models/");
+var db = require("../models");
 
 module.exports = function(app) {
     // GET route for getting all of the services
@@ -18,30 +18,31 @@ module.exports = function(app) {
     // and complete property (req.body)
     db.Service.create({
         startDate: req.body.startDate,
+        validThru: req.body.validThru,
         companyName: req.body.companyName,
-        country: req.body.country,
-        topic: req.body.topic,
+        paymentBy: req.body.paymentBy,
+        producer: req.body.producer,
+        contactPerson: req.body.contactPerson,
         contactPhone: req.body.contactPhone,
         contactCellPhone: req.body.contactCellPhone,
         contactEmail: req.body.contactEmail,
-        producer: req.body.producer,
-        state: req.body.state,
-        streetAddress: req.body.streetAddress,
-        city: req.body.city,
-        zip: req.body.zip,
         contactStreetAddress : req.body.contactStreetAddress,
         contactZip : req.body.contactZip,
         contactCountry: req.body.contactCountry,
         contactState: req.body.contactState,
         contactCity: req.body.contactCity,
-        equipmentsSelectedSite: req.body.equipmentsSelectedSite,
-        equipmentsSelectedTraining: req.body.equipmentsSelectedTraining,
-        //equipments: req.body.equipments,
-        instructions: req.body.instructions
+        Laptop: req.body.Laptop,
+        projectorScreen: req.body.projectorScreen,
+        Table: req.body.Table,
+        trainingKit: req.body.trainingKit,
+        forkliftTrainingKit: req.body.forkliftTrainingKit,
+        CPRmannequins : req.body.CPRmannequins,
+        firstAidAEDKit:req.body.firstAidAEDKit,
+        RespiratorFitTestKit: req.body.RespiratorFitTestKit,
+        instructions: req.body.instructions,
+        quotationIssuedBy: req.body.quotationIssuedBy,
+        additionalEquipment: req.body.additionalEquipment
     }).then(function(service) {
-        // console.log("Posted", service.get({
-        //     plain: true
-        //   }))
       res.json(service);
     });
   });
@@ -50,7 +51,6 @@ app.get("/api/employees", function(req, res){
 
     db.Employee.findAll({})
     .then(function(employee){
-        //console.log(employee)
         res.json(employee)
     });
 });
@@ -59,7 +59,6 @@ app.get("/api/contacts", function(req, res){
 
     db.Contact.findAll({})
     .then(function(contact){
-        //console.log(contact)
         res.json(contact)
     });
 });
@@ -69,7 +68,6 @@ app.get("/api/locations", function(req, res){
 
     db.Location.findAll({})
     .then(function(location){
-        //console.log(location)
         res.json(location)
     });
 });
@@ -78,7 +76,6 @@ app.get("/api/companies", function(req, res){
 
     db.Company.findAll({})
     .then(function(company){
-        //console.log(company)
         res.json(company)
     });
 });
@@ -87,7 +84,6 @@ app.get("/api/companiesEquipments", function(req, res){
 
     db.CompanyHasEquipment.findAll({})
     .then(function(equipments){
-        //console.log(equipments)
         res.json(equipments)
     });
 });
@@ -100,7 +96,6 @@ app.get("/api/companiesEquipments/:companyName", function(req, res){
         }
     })
     .then(function(equipments){
-        //console.log(equipments)
         res.json(equipments)
     });
 });
@@ -109,7 +104,6 @@ app.get("/api/topics", function(req, res){
 
     db.EquipmentVsTopic.findAll({})
     .then(function(equipments){
-        //console.log(equipments)
         res.json(equipments)
     });
 });
@@ -128,9 +122,6 @@ app.post("/api/companiesEquipments", function(req, res){
         firstAidAEDKit:req.body.firstAidAEDKit,
         Handouts: req.body.Handouts
     }).then(function(equipments) {
-        // console.log("Posted", equipments.get({
-        //     plain: true
-        //   }))
       res.json(equipments);
     });
 });
@@ -143,9 +134,6 @@ app.post("/api/employees", function(req, res){
         EMP_STATUS: req.body.EMP_STATUS,
         PASSWORD: req.body.PASSWORD
     }).then(function(employee) {
-        // console.log("Posted", employee.get({
-        //     plain: true
-        //   }))
       res.json(employee);
     });
 });
@@ -157,9 +145,6 @@ app.post("/api/companies", function(req, res){
         agency: req.body.newAgency,
         contract_client: req.body.newContractClient
     }).then(function(company) {
-        // console.log("Posted", company.get({
-        //     plain: true
-        //   }))
       res.json(company);
     });
 });
@@ -174,9 +159,6 @@ app.post("/api/contacts", function(req, res){
         contactAlternateMobilePhone: req.body.newContactMobilePhoneAlternate,
         contactIsMain: req.body.mainContact
     }).then(function(contact) {
-        // console.log("Posted", contact.get({
-        //     plain: true
-        //   }))
       res.json(contact);
     });
 });
@@ -191,9 +173,6 @@ app.post("/api/locations", function(req, res){
         contactCountry: req.body.newContactCountry,
         contactIsMainLocation: req.body.mainLocation
     }).then(function(location) {
-        // console.log("Posted", location.get({
-        //     plain: true
-        //   }))
       res.json(location);
     });
 });
@@ -201,24 +180,22 @@ app.post("/api/locations", function(req, res){
 app.post("/api/requestedServices", function(req, res){
     db.ServiceRequests.create({
         companyName: req.body.companyName,
-        topic: req.body.topic,
+        service: req.body.service,
         billable: req.body.billable,
         qty: req.body.qty,
         alternateName: req.body.alternateName,
-        cost: req.body.cost
+        cost: req.body.cost,
+        serviceDescription: req.body.serviceDescription
     }).then(function(service) {
-        // console.log("Posted", service.get({
-        //     plain: true
-        //   }))
       res.json(service);
     });
 });
 
-app.delete("/api/requestedServices/:companyName", function(req, res){
+
+app.delete("/api/requestedServices", function(req, res){
     db.ServiceRequests.destroy({
-        where: {
-            companyName: req.params.companyName
-        }
+        where: {},
+        truncate: true
     })
     .then(function(result){
         res.json(result);
@@ -240,7 +217,6 @@ app.get("/api/requestedServices", function(req, res){
     db.ServiceRequests.findAll({
         
     }).then(function(service) {
-        //console.log(service);
       res.json(service);
     });
 });
@@ -251,7 +227,6 @@ app.get("/api/companies/:companyName", function(req, res){
             companyName: req.params.companyName,
         }
     }).then(function(company) {
-        //console.log(company);
       res.json(company);
     });
 });
@@ -262,7 +237,6 @@ app.get("/api/locations/:companyName", function(req, res){
             companyName: req.params.companyName,
         }
     }).then(function(location) {
-        //console.log(location);
       res.json(location);
     });
 });
@@ -273,7 +247,6 @@ app.get("/api/contacts/:companyName", function(req, res){
             companyName: req.params.companyName,
         }
     }).then(function(contact) {
-        //console.log(contact);
       res.json(contact);
     });
 });
@@ -285,5 +258,35 @@ app.get("/api/listOfServices", function(req, res){
     });
 });
 
+//TaskList
+
+app.post("/api/taskList", function(req, res){
+    db.TaskList.create({
+        quotationIssuedBy: req.body.quotationIssuedBy,
+        quotationNumber: req.body.quotationNumber,
+        service: req.body.service,
+        client: req.body.client,
+        details: req.body.instructions,
+        dateAssigned: req.body.startDate, //sort
+        dueDate: req.body.validThru,
+        serviceUnits: req.body.qty,
+        dateCompleted: req.body.dateCompleted,
+        status_notes_comments: req.body.comments,
+        serviceDescription: req.body.serviceDescription,
+        quoteApproved: req.body.quoteApproved,
+        completed: req.body.completed
+    }).then(function(task) {
+      res.json(task);
+    });
+});
+
+app.get("/api/taskList", function(req, res){
+    db.TaskList.findAll({})
+    .then(function(service){
+        res.json(service);
+    });
+});
 
 }
+
+

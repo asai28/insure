@@ -16,6 +16,8 @@
     "i": "^0.3.6",
     "jspdf": "^1.4.1",
     "moment": "^2.22.2",
+    "node-pre-gyp": "^0.12.0",
+    "node-sass": "^4.11.0",
     "npm": "^6.4.1",
     "page-wrapping": "^1.0.2",
     "react": "^16.6.3",
@@ -34,6 +36,7 @@
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.1.1",
     "react-simple-invoice": "^1.0.6",
+    "react-table": "^6.8.6",
     "react-validation": "^3.0.7",
     "reactstrap": "^6.4.0",
     "recompose": "^0.30.0"

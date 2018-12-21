@@ -18,7 +18,8 @@ app.use(function(req, res, next) {
 
 // Routes
 // =============================================================
-require("./routes/apiRoutes")(app);
+require("./routes/apiRoutesServiceRequestForm")(app);
+require("./routes/apiRoutesTaskList")(app);
 
 app.get("/", (req, res)=>{
     res.json("Hello from server");

@@ -1,91 +1,108 @@
 import React, { Component } from 'react';
-import firebase from '../../firebase';
+import { withRouter } from 'react-router-dom';
+import { Form, Grid, Alert } from 'reactstrap';
+import { RegisterLink } from './RegisterPage';
+import { auth } from '../firebase/firebase';
+import * as routes from '../constants/routes';
 
-class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      currentItem: '',
-      username: '',
-      items: []
-    }
-    this.handleChange = this.handleChange.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
+const LoginPage = ({ history }) =>
+  <Grid centered columns={2}>
+    <Grid.Column>
+      <h2>Login</h2>
+      <LoginForm history={history} />
+      <br />
+      <RegisterLink />
+    </Grid.Column>
+  </Grid>
+
+const byPropKey = (propertyName, value) => () => ({
+  [propertyName]: value,
+});
+
+const INITIAL_STATE = {
+  email: '',
+  password: '',
+  error: null,
+};
+
+class LoginForm extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...INITIAL_STATE };
   }
-  handleChange(e) {
-    this.setState({
-      [e.target.name]: e.target.value
-    });
-  }
-  handleSubmit(e) {
-    e.preventDefault();
-    const itemsRef = firebase.database().ref('items');
-    const item = {
-      title: this.state.currentItem,
-      user: this.state.username
-    }
-    itemsRef.push(item);
-    this.setState({
-      currentItem: '',
-      username: ''
-    });
-  }
-  componentDidMount() {
-    const itemsRef = firebase.database().ref('items');
-    itemsRef.on('value', (snapshot) => {
-      let items = snapshot.val();
-      let newState = [];
-      for (let item in items) {
-        newState.push({
-          id: item,
-          title: items[item].title,
-          user: items[item].user
-        });
-      }
-      this.setState({
-        items: newState
+
+  onSubmit = (event) => {
+    event.preventDefault();
+    const {
+      email,
+      password,
+    } = this.state;
+
+    const {
+      history,
+    } = this.props;
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        this.setState({ ...INITIAL_STATE });
+        history.push(routes.HOME);
+      })
+      .catch(error => {
+        this.setState(byPropKey('error', error));
       });
-    });
+
+      const username = this.state.email;
+
+      const url = `http://localhost:8080/adaptiveweb/login?username=${username}&password=1111`
+        return fetch(url)
+            .then(response => response.json())
+            .then(response => console.log('Successful login!'))
+            .catch(error => console.log(error));
+
   }
-  removeItem(itemId) {
-    const itemRef = firebase.database().ref(`/items/${itemId}`);
-    itemRef.remove();
-  }
+
   render() {
+    const {
+      email,
+      password,
+      error,
+    } = this.state;
+
+    const isInvalid =
+      password === '' ||
+      email === '';
+
     return (
-      <div className='app'>
-        <header>
-            <div className="wrapper">
-              <h1>Fun Food Friends</h1>                 
-            </div>
-        </header>
-        <div className='container'>
-          <section className='add-item'>
-                <form onSubmit={this.handleSubmit}>
-                  <input type="text" name="username" placeholder="What's your name?" onChange={this.handleChange} value={this.state.username} />
-                  <input type="text" name="currentItem" placeholder="What are you bringing?" onChange={this.handleChange} value={this.state.currentItem} />
-                  <button>Add Item</button>
-                </form>
-          </section>
-          <section className='display-item'>
-              <div className="wrapper">
-                <ul>
-                  {this.state.items.map((item) => {
-                    return (
-                      <li key={item.id}>
-                        <h3>{item.title}</h3>
-                        <p>brought by: {item.user}
-                          <button onClick={() => this.removeItem(item.id)}>Remove Item</button>
-                        </p>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </div>
-          </section>
-        </div>
-      </div>
+      <Form onSubmit={this.onSubmit}>
+        <Form.Input fluid
+          value={email}
+          onChange={event => this.setState(byPropKey('email', event.target.value))}
+          type="text"
+          placeholder="Email Address"
+          label="Email Address"
+        />
+        <Form.Input fluid
+          value={password}
+          onChange={event => this.setState(byPropKey('password', event.target.value))}
+          type="password"
+          placeholder="Password"
+          label="Password"
+        />
+        <Form.Button disabled={isInvalid}>Submit</Form.Button>
+        {
+          error &&
+          <Alert negative>
+            <Message.Header>{error.message}</Message.Header>
+          </Alert>
+        }
+      </Form>
     );
   }
 }
-export default App;
+
+export default withRouter(LoginPage);
+
+export {
+  LoginForm,
+};
