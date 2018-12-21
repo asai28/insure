@@ -24,7 +24,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node server && yarn start /client"
+    "start": "node server && cd client && yarn start"
   },
   "repository": {
     "type": "git",
