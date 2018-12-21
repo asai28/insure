@@ -1,23 +1,23 @@
 {
   "development": {
-    "username": "root",
-    "password": "root",
-    "database": "InsureCompliance",
-    "host": "127.0.0.1",
+    "username": "b8zoc8o4speigd89",
+    "password": "cshls49pfbo6bumj",
+    "database": "pkhce992jq509u0y",
+    "host": "bfjrxdpxrza9qllq.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
     "dialect": "mysql"
   },
   "test": {
-    "username": "root",
-    "password": "root",
-    "database": "InsureCompliance",
-    "host": "127.0.0.1",
+    "username": "b8zoc8o4speigd89",
+    "password": "cshls49pfbo6bumj",
+    "database": "pkhce992jq509u0y",
+    "host": "bfjrxdpxrza9qllq.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
     "dialect": "mysql"
   },
   "production": {
-    "username": "root",
-    "password": "root",
-    "database": "InsureCompliance",
-    "host": "127.0.0.1",
+    "username": "b8zoc8o4speigd89",
+    "password": "cshls49pfbo6bumj",
+    "database": "pkhce992jq509u0y",
+    "host": "bfjrxdpxrza9qllq.cbetxkdyhwsb.us-east-1.rds.amazonaws.com",
     "dialect": "mysql"
   }
 }
