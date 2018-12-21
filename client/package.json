@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "homepage": "https://asai28.github.io/insure",
-  "proxy": "https://glacial-fjord-93165.herokuapp.com:3001/",
+  "proxy": "https://glacial-fjord-93165.herokuapp.com/",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.6",
     "@fortawesome/free-solid-svg-icons": "^5.4.1",
