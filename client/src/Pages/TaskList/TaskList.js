@@ -3,7 +3,6 @@ import { Jumbotron, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 import { Container, Row, Col } from 'reactstrap';
 import API from "../../utils/API";
 import moment from "moment";
-import "moment-timezone";
 import "./TaskList.scss";
 import { isNullOrUndefined } from "util";
 
