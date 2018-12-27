@@ -4,6 +4,8 @@ var bodyParser = require("body-parser");
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.use(express.static(path.join(__dirname, 'client/build')));
+
 const path = require('path')
 // Serve static files from the React frontend app
 // app.use(express.static(path.join(__dirname, 'client/build')))
@@ -30,7 +32,7 @@ require("./routes/apiRoutesServiceRequestForm")(app);
 require("./routes/apiRoutesTaskList")(app);
 
 app.get("/", (req, res)=>{
-    res.json("Hello from server");
+    res.sendFile(path.join(__dirname+'/client/build/index.html'));
 });
 
 db.sequelize.sync({force: false}).then(function() {
