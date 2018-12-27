@@ -5,7 +5,7 @@ const path = require('path')
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static("app/build"));
 
 // Serve static files from the React frontend app
 // app.use(express.static(path.join(__dirname, 'client/build')))
@@ -31,9 +31,9 @@ app.use(function(req, res, next) {
 require("./routes/apiRoutesServiceRequestForm")(app);
 require("./routes/apiRoutesTaskList")(app);
 
-+app.get('/*', function (req, res) {
-    res.sendFile(path.join(__dirname, '/client/build', 'index.html'));
-  });
+// +app.get('/*', function (req, res) {
+//     res.sendFile(path.join(__dirname, '/client/build', 'index.html'));
+//   });
 
 db.sequelize.sync({force: false}).then(function() {
 app.listen(PORT,function(){`Listening to port ${PORT}`});
