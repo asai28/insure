@@ -55,7 +55,7 @@ class App extends React.Component{
             </Nav>
           </Collapse>
         </Navbar>
-        <Router basename="/insure">
+        <Router basename="/">
         <Switch>
         <Route exact={true} path={routes.SERVICE_FORM} component={ServiceRequestForm} />
         {/* <Route exact={true} path={routes.LOGIN} component={LoginPage} />
