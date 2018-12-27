@@ -287,9 +287,9 @@ app.get("/api/taskList", function(req, res){
     });
 });
 
-app.get("/", function(req, res){
-    res.send("Hi");
-})
+// app.get("/", function(req, res){
+//     res.send("Hi");
+// })
 
 }
 
