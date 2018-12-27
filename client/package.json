@@ -2,7 +2,7 @@
   "name": "app1",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://sheltered-ravine-63074.herokuapp.com/",
+  "homepage": "https://asai28.github.io/insure/",
   "proxy": "https://sheltered-ravine-63074.herokuapp.com/",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.6",
