@@ -25,7 +25,14 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node server.js && cd client && yarn start"
+    "install": "cd client && yarn",
+    "prestart": "yarn client:build",
+    "start": "node server.js",
+    "dev": "concurrently --kill-others \"yarn server:dev\" \"yarn client:start\"",
+    "server:start": "node server.js",
+    "server:dev": "nodemon --ignore ./app server.js",
+    "client:start": "cd client && yarn start",
+    "client:build": "cd client && yarn build"
   },
   "repository": {
     "type": "git",
