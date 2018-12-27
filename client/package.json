@@ -2,8 +2,8 @@
   "name": "app1",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://asai28.github.io/insure",
-  "proxy": "https://glacial-fjord-93165.herokuapp.com/",
+  "homepage": "https://sheltered-ravine-63074.herokuapp.com/client",
+  "proxy": "https://sheltered-ravine-63074.herokuapp.com/",
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.6",
     "@fortawesome/free-solid-svg-icons": "^5.4.1",
