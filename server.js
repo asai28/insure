@@ -32,7 +32,7 @@ require("./routes/apiRoutesServiceRequestForm")(app);
 require("./routes/apiRoutesTaskList")(app);
 
 app.get("/", (req, res)=>{
-    res.sendFile(path.join(__dirname+'/client/build/index.html'));
+    res.sendFile(path.join(__dirname, '/client/build/index.html'));
 });
 
 db.sequelize.sync({force: false}).then(function() {
