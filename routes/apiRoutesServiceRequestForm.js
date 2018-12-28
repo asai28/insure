@@ -202,17 +202,6 @@ app.delete("/api/requestedServices", function(req, res){
     });
 });
 
-app.delete("/api/requestedServices/:alternateName", function(req, res){
-    db.ServiceRequests.destroy({
-        where: {
-            alternateName: req.params.alternateName
-        }
-    })
-    .then(function(result){
-        res.json(result);
-    });
-});
-
 app.delete("/api/requestedServices/:id", function(req, res){
     db.ServiceRequests.destroy({
         where: {
