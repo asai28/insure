@@ -213,6 +213,19 @@ app.delete("/api/requestedServices/:alternateName", function(req, res){
     });
 });
 
+app.delete("/api/requestedServices/:id", function(req, res){
+    db.ServiceRequests.destroy({
+        where: {
+            id: req.params.id
+        },
+        truncate: true
+    })
+    .then(function(result){
+        res.json(result);
+    });
+});
+
+
 app.get("/api/requestedServices", function(req, res){
     db.ServiceRequests.findAll({
         
