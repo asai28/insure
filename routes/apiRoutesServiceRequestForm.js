@@ -219,7 +219,7 @@ app.delete("/api/requestedServices/:id", function(req, res){
             id: req.params.id
         },
         truncate: true
-    })
+    }).on('success', function() { console.log("Deleted sucessfully") })
     .then(function(result){
         res.json(result);
     });
