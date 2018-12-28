@@ -206,8 +206,7 @@ app.delete("/api/requestedServices/:id", function(req, res){
     db.ServiceRequests.destroy({
         where: {
             id: req.params.id
-        },
-        truncate: true
+        }
     }).on('success', function() { console.log("Deleted sucessfully") })
     .then(function(result){
         res.json(result);
