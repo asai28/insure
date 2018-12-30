@@ -1,5 +1,4 @@
 var db = require("../models");
-const Op = sequelize.Op;
 
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
@@ -7,7 +6,7 @@ module.exports = function(app) {
             where: {
                 quotationIssuedBy: req.params.emp,
                 quoteApproved: {
-                    [Op.or]: [true,null,undefined]
+                    [sequelize.Op.or]: [true,null,undefined]
                 } 
             }
         })
