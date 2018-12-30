@@ -57,7 +57,10 @@ class TaskList extends React.Component{
             })
             .catch(err => console.log(err));
 
-            
+            API.sortEmployeeTasks(this.state.employee.split(" ").join("%20"), 'dueDate', 'ASC')
+            .then(res => console.log(res))
+            .catch(err => console.log(err));
+ 
         }
     }
 
@@ -70,23 +73,13 @@ class TaskList extends React.Component{
                 <Label for="employee">Employee Name</Label>
                 <Input type="select" name="employee" id="employee" onChange={this.handleInputChange} onClick={this.getTasks}>
                     <option>Choose your name</option>
-                    {this.state.employee_data.map(x => <option value={x.EMP_NAME} onClick= {() => {
-                        API.getEmployeeTasks(x.EMP_NAME)
-                        .then(res => {
-                            console.log(res);
-                            this.setState({
-                                tasks: res.data
-                            })
-                        })
-                        .catch(err => console.log(err))
-                    }}>{x.EMP_NAME}</option>)}
+                    {this.state.employee_data.map(x => <option value={x.EMP_NAME}>{x.EMP_NAME}</option>)}
                 </Input>
             </FormGroup>
             </Jumbotron>
            
             </Container>
            <Container>
-           <Button>Sort by Service</Button>
             <h5 style = {{'fontFamily': 'Noto Serif SC, serif'}}>Active Tasks</h5>
             <br/>
             <table id="active" style={{'text-align':'center'}}>
@@ -117,19 +110,20 @@ class TaskList extends React.Component{
                     <td key={"activeList"+index+"_dateOfCompletion"}>
                     <Input
                           type="text"
-                          name={"activeList"+index+ "_dateCompleted"}
-                          id={"activeList"+index+ "_dateCompleted"}
-                          value=""
+                          name={"activeList"+ index + "_dateCompleted"}
+                          id={"activeList"+ index + "_dateCompleted"}
+                          defaultValue = {"0000-00-00"}
+                          value={undefined}
                           placeholder="Enter date of completion"
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    <td key={"activeList"+index+"_notes_comments"}>
+                    <td key={"activeList"+ index +"_status_notes_comments"}>
                     <Input
                           type="textarea"
-                          name={"activeList"+index+ "_comments"}
-                          id={"activeList"+index+ "_comments"}
-                          value={x.status_notes_comments}
+                          name={"activeList"+ index + "_status_notes_comments"}
+                          id={"activeList"+ index + "_status_notes_comments"}
+                          value={undefined}
                           placeholder="Enter status/notes/comments"
                           onChange={this.handleInputChange}
                         />
@@ -142,11 +136,14 @@ class TaskList extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} value={true} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} value={"activeList"+index+"_quoteApproved"} value={true} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
-                                    dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
-                                    quoteApproved: true
+                                    // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
+                                    // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
+                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    quoteApproved: true,
+                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Quote approved"))
@@ -160,8 +157,11 @@ class TaskList extends React.Component{
                             <Input type="radio" name={"activeList"+index+"_quoteApproved"} value={false} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
-                                    dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
-                                    quoteApproved: false
+                                    // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
+                                    quoteApproved: false,
+                                    // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
+                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Quote not approved"))
@@ -178,9 +178,12 @@ class TaskList extends React.Component{
                             <Label check>
                             <Input type="radio" name={"activeList"+index+"_completed"} value={true} onClick = {() => {
                                 console.log(x.id);
+                                console.log(document.getElementById("activeList"+index+ "_dateCompleted").value, document.getElementById("activeList"+ index + "_status_notes_comments").value);
                                 var item = {
-                                    status_notes_comments: document.getElementById("activeList"+index+ "_comments").value,
-                                    completed: true
+                                    completed: true,
+                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    quoteApproved: x.quoteApproved,
+                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Task completed"))
@@ -194,8 +197,10 @@ class TaskList extends React.Component{
                             <Input type="radio" name={"activeList"+index+"_completed"} value={false} onClick = {() => {
                              console.log(x.id);
                                 var item = {
-                                    status_notes_comments: document.getElementById("activeList"+index+ "_comments").value,
-                                    completed: false
+                                    completed: false,
+                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    quoteApproved: x.quoteApproved,
+                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Task incomplete"))
