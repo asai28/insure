@@ -12,20 +12,26 @@ module.exports = function(app) {
         })
         .then(function(service){
             console.log("heyoo");
-            console.log(req.query.emp);
+            console.log(req.params.emp);
             console.log(service)
             res.json(service)
         });
    });
 
-   app.put("/api/tasklist?quotationIssuedBy=:quotationIssuedBy&quotationNumber=:quotationNumber&service=:service", function(req,res){
-        db.TaskList.update({
-            quotationIssuedBy: req.body.quotationIssuedBy,
-            quotationNumber: req.body.quotationNumber,
-            service: req.body.service
+   app.put("/api/tasklist/:id", function(req,res){
+        db.TaskList.update(
+            {
+                quoteApproved: req.body.quoteApproved,
+                dateCompleted: req.body.dateCompleted,
+                status_notes_comments: req.body.status_notes_comments,
+                completed: req.body.completed
+            },
+            {where: {
+                id: req.params.id
+            }
         }).then(function(service){
             console.log("heyoo");
-            console.log(req.query.emp);
+            console.log(req.query.id);
             console.log(service)
             res.json(service)
         });

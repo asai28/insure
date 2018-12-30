@@ -22,7 +22,7 @@ import "moment-timezone";
 import "react-datepicker/dist/react-datepicker.css";
 
 //Validation icons
-import { FaPlus, FaCheckCircle, FaTimesCircle, FaTrash, FaTimes} from "react-icons/fa";
+import { FaPlus, FaCheckCircle, FaTimesCircle, FaTrash, FaTimes, FaMinusCircle} from "react-icons/fa";
 
 //Importing cities and states for countries
 import cities from "../../utils/cities.json";
@@ -286,6 +286,10 @@ export default class Example extends React.Component {
       document.getElementById("costForService").value = result.costOfService;
 
       this.setState({
+      billableService: true,
+      durationInMin: parseInt(result.DurationInMin),
+      numServiceUnits: parseFloat(this.state.numServiceUnits),
+      costForService: parseFloat(result.costOfService),
         service: "Training - " + this.state.topic,
         Laptop: this.state.Laptop || result.Laptop,
         projectorScreen: this.state.projectorScreen || result.projectorScreen,
@@ -377,25 +381,39 @@ export default class Example extends React.Component {
       companyName: this.state.companyName,
       service: this.state.service,
       billable: this.state.billableService,
-      qty: document.getElementById("numServiceUnits").value === undefined ? 0 : parseFloat(document.getElementById("numServiceUnits").value),
+      costForService: this.state.costForService,
+      durationInMin: this.state.durationInMin,
+      qty: (this.state.numServiceUnits !== undefined) ? parseFloat(this.state.numServiceUnits): 1,
       alternateName: this.state.alternateName.length === 0 ? this.state.service : this.state.alternateName,
-      cost: document.getElementById("costForService").value === undefined ? 0 : parseFloat(document.getElementById("costForService").value),
+      cost: parseFloat(this.state.costForService),
       serviceDescription: this.state.description
-    };
+    }; 
 
     console.log(item);
 
     API.newServiceRequest(item)
       .then(res => {
+        //console.log(res);
+        this.setState({
+          topic: "",
+          service: "",
+          description: "",
+          costForService: 0,
+          billableService: true,
+          alternateName: this.state.service,
+          durationInMin: 0
+        });
+        API.getServiceRequests()
+      .then(res => {
         console.log(res);
-        // this.setState({
-        //   topic: "",
-        //   service: "",
-        //   description: "",
-        //   costForService: 0,
-        //   billable: false,
-        //   alternateName: this.state.topic
-        // });
+        this.setState({
+          requestedServices : res.data
+        })
+        this.setState({
+          requestedServiceRows: this.getServices()
+        });
+      })
+      .catch(err => console.log(err));
       })
       .catch(err => console.log(err));
 
@@ -424,11 +442,30 @@ export default class Example extends React.Component {
     return this.state.requestedServices
       .filter(x => x.billable === true)
       .map((x, index) => (
-        <tr key={"serviceRequest" + (index + 1)}>
+        <tr key={"serviceRequest" + (index + 1)} id = {x.id}>
           <td>{x.alternateName}</td>
           <td>{x.qty}</td>
           <td>{x.cost.toFixed(2)}</td>
           <td>${(x.qty * x.cost).toFixed(2)}</td>
+          <td><FaMinusCircle style = {{'color': '#cc3300'}} onClick = {() => {
+            document.getElementById(x.id).style.display = 'none';
+            API.removeService(x.id)
+            .then(() => {
+              console.log(x.id);
+              API.getServiceRequests()
+              .then(res => {
+                this.setState({
+                  requestedServices : res.data
+                })
+                this.setState({
+                  requestedServiceRows: this.getServices()
+                });
+              console.log("Deleted");
+              })
+              .catch(err => console.log(err));
+            })
+            .catch(err => console.log(err));
+            }}/></td>
           {this.setState({
             totalCost: this.state.totalCost + x.qty * x.cost * x.billable
           })}
@@ -1455,6 +1492,7 @@ export default class Example extends React.Component {
                           type="text"
                           name="costForService"
                           id="costForService"
+                          value = {this.state.costForService}
                           placeholder="Enter the cost for the service"
                           onChange={this.handleInputChange}
                         />
@@ -1469,6 +1507,7 @@ export default class Example extends React.Component {
                           type="text"
                           name="alternateName"
                           id="alternateNameForService"
+                          value = {this.state.alternateName}
                           placeholder="Enter alternate name for service"
                           onChange={this.handleInputChange}
                         />
@@ -1483,6 +1522,7 @@ export default class Example extends React.Component {
                           type="text"
                           name="durationInMin"
                           id="durationInMin"
+                          value = {this.state.durationInMin}
                           placeholder="Enter duration of service in minutes"
                           onChange={this.handleInputChange}
                         />
@@ -1495,6 +1535,7 @@ export default class Example extends React.Component {
                           type="text"
                           name="numServiceUnits"
                           id="numServiceUnits"
+                          value = {this.state.numServiceUnits}
                           placeholder="Enter number of service units"
                           onChange={this.handleInputChange}
                         />
@@ -1957,6 +1998,24 @@ export default class Example extends React.Component {
                 placeholder="Instructions"
                 onChange={this.handleInputChange}
               />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Review Services</Label>
+              <table id="customers">
+                  <tr>
+                    <th>ACTIVITY</th>
+                    <th>QTY</th>
+                    <th>RATE</th>
+                    <th>AMOUNT</th>
+                    <th>DELETE</th>
+                  </tr>
+                  <tbody>
+                    {this.state.requestedServices.length > 0
+                      ? this.state.requestedServiceRows
+                      : ""}
+                  </tbody>
+                </table>
             </FormGroup>
             
             <Button

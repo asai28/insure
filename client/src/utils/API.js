@@ -70,6 +70,12 @@ export default{
     },
     getEmployeeTasks: function(employee){
         return axios.get("/api/tasklist/" + employee)
+    },
+    removeService: function(id){
+        return axios.delete("/api/requestedServices/" + id)
+    },
+    modifyTask: function(id, item){
+        return axios.put("/api/tasklist/" + id, item)
     }
 }
 
