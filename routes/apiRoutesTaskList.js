@@ -5,10 +5,7 @@ module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
         db.TaskList.findAll({
             where: {
-                quotationIssuedBy: req.params.emp,
-                quoteApproved: {
-                    [sequelize.Op.or]: [true,null]
-                } 
+            [sequelize.Op.or]: [{quoteApproved: true},{quoteApproved: null}]    
             }
         })
         .then(function(service){
