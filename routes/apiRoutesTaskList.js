@@ -3,7 +3,7 @@ var db = require("../models");
 // This may be confusing but here Sequelize (capital) references the standard library
 var Sequelize = require("sequelize");
 // sequelize (lowercase) references our connection to the DB.
-var sequelize = require("../config");
+var sequelize = require("../config/config.json");
 
 
 module.exports = function(app) {
