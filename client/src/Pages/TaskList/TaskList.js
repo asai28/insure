@@ -104,16 +104,26 @@ class TaskList extends React.Component{
                                 });
                             if(document.getElementById('sortServiceAsc').style.color === 'lime'){
                                 document.getElementById('sortServiceAsc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('service',true),
+                                    desc: this.state.desc.filter(x => x !== "service"),
+                                    asc: this.state.asc.filter(x => x !== "service")
+                                });
                             }
                         }
                         else{
                             document.getElementById('sortServiceDesc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('service',true),
+                                    desc: this.state.desc.filter(x => x !== "service"),
+                                    asc: this.state.asc.filter(x => x !== "service")
+                                });
                         }
                         if(document.getElementById('sortServiceAsc').style.color === 'black' && document.getElementById('sortServiceDesc').style.color === 'black'){
                             this.setState({
                                     sortParameters: this.state.sortParameters.set('service',false),
                                     desc: this.state.desc.filter(x => x !== "service"),
-                                    asc: this.state.asc.filter(x => x !== "service").concat("service")
+                                    asc: this.state.asc.filter(x => x !== "service")
                                 });
                         }
                         this.setState({
@@ -134,6 +144,11 @@ class TaskList extends React.Component{
                                 });                        
                             if(document.getElementById('sortServiceDesc').style.color === 'yellow'){
                                 document.getElementById('sortServiceDesc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('service',false),
+                                    desc: this.state.desc.filter(x => x !== "service"),
+                                    asc: this.state.asc.filter(x => x !== "service")
+                                });
                             }
                         }
                         else{
