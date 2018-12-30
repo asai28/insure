@@ -5,13 +5,15 @@ var db = require("../models");
 // // sequelize (lowercase) references our connection to the DB.
 // var sequelize = require("../models");
 
-
+const Op = db.Sequelize.Op;
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,
-                [db.Sequelize.Op.or]: [{quoteApproved: true}, {quoteApproved: null}]
+                quoteApproved:{
+                    [Op.not]: false
+                }
             }
         })
         .then(function(service){
