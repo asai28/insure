@@ -1,9 +1,9 @@
 var db = require("../models");
 
-// This may be confusing but here Sequelize (capital) references the standard library
-var Sequelize = require("sequelize");
-// sequelize (lowercase) references our connection to the DB.
-var sequelize = require("../config/config.json");
+// // This may be confusing but here Sequelize (capital) references the standard library
+// var Sequelize = require("sequelize");
+// // sequelize (lowercase) references our connection to the DB.
+// var sequelize = require("../models");
 
 
 module.exports = function(app) {
@@ -11,7 +11,7 @@ module.exports = function(app) {
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,
-                [sequelize.Op.or]: [{quoteApproved: true}, {quoteApproved: null}]
+                [db.Op.or]: [{quoteApproved: true}, {quoteApproved: null}]
             }
         })
         .then(function(service){
