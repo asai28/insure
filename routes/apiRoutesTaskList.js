@@ -1,11 +1,12 @@
 var db = require("../models");
 var sequelize = require('sequelize');
+const Op = sequelize.Op;
 
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
         db.TaskList.findAll({
             where: {
-            [sequelize.Op.or]: [{quoteApproved: true},{quoteApproved: null}]    
+            [Op.or]: [{quoteApproved: true},{quoteApproved: null}]    
             }
         })
         .then(function(service){
