@@ -1,12 +1,17 @@
 var db = require("../models");
 
+// This may be confusing but here Sequelize (capital) references the standard library
+var Sequelize = require("sequelize");
+// sequelize (lowercase) references our connection to the DB.
+var sequelize = require("../config");
+
+
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,
-                quoteApproved: true,
-                quoteApproved: null
+                [sequelize.Op.or]: [{quoteApproved: true}, {quoteApproved: null}]
             }
         })
         .then(function(service){

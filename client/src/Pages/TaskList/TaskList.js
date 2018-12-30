@@ -107,7 +107,6 @@ class TaskList extends React.Component{
                                 this.setState({
                                     sortParameters: this.state.sortParameters.set('service',true),
                                     desc: this.state.desc.filter(x => x !== "service"),
-                                    asc: this.state.asc.filter(x => x !== "service")
                                 });
                             }
                         }
@@ -116,7 +115,6 @@ class TaskList extends React.Component{
                             this.setState({
                                     sortParameters: this.state.sortParameters.set('service',true),
                                     desc: this.state.desc.filter(x => x !== "service"),
-                                    asc: this.state.asc.filter(x => x !== "service")
                                 });
                         }
                         if(document.getElementById('sortServiceAsc').style.color === 'black' && document.getElementById('sortServiceDesc').style.color === 'black'){
@@ -147,12 +145,15 @@ class TaskList extends React.Component{
                                 this.setState({
                                     sortParameters: this.state.sortParameters.set('service',false),
                                     desc: this.state.desc.filter(x => x !== "service"),
-                                    asc: this.state.asc.filter(x => x !== "service")
                                 });
                             }
                         }
                         else{
                             document.getElementById('sortServiceAsc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('service',false),
+                                    asc: this.state.asc.filter(x => x !== "service")
+                                });
                         }
                         if(document.getElementById('sortServiceAsc').style.color === 'black' && document.getElementById('sortServiceDesc').style.color === 'black'){
                             this.setState({
@@ -163,9 +164,9 @@ class TaskList extends React.Component{
                         }
                         this.setState({
                             tasks: fastSort(fastSort(this.state.tasks).by([
-                                    {asc: this.state.asc}
-                                    ])).by([
                                     {desc: this.state.desc}
+                                    ])).by([
+                                    {asc: this.state.asc}
                                     ])
                         });
                         this.printMap();
@@ -219,12 +220,12 @@ class TaskList extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} value={"activeList"+index+"_quoteApproved"} value={true} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={true} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
                                     // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
                                     // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    dateCompleted: moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: true,
                                     status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
                                 }
@@ -237,7 +238,7 @@ class TaskList extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} value={false} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={false} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
                                     // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
@@ -259,9 +260,12 @@ class TaskList extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} value={true} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_completed"} disabled={
+                                isNullOrUndefined(x.quoteApproved)
+                                } value={true} onClick = {() => {
                                 console.log(x.id);
                                 console.log(document.getElementById("activeList"+index+ "_dateCompleted").value, document.getElementById("activeList"+ index + "_status_notes_comments").value);
+                                console.log(!isNullOrUndefined(x.quoteApproved))
                                 var item = {
                                     completed: true,
                                     dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
@@ -277,7 +281,9 @@ class TaskList extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} value={false} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_completed"} value={false} disabled ={
+                                isNullOrUndefined(x.quoteApproved)
+                                } onClick = {() => {
                              console.log(x.id);
                                 var item = {
                                     completed: false,
