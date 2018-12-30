@@ -11,7 +11,7 @@ module.exports = function(app) {
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,
-                [db.sequelize.Op.or]: [{quoteApproved: true}, {quoteApproved: null}]
+                [db.Sequelize.Op.or]: [{quoteApproved: true}, {quoteApproved: null}]
             }
         })
         .then(function(service){
