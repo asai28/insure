@@ -7,7 +7,7 @@ module.exports = function(app) {
             where: {
                 quotationIssuedBy: req.params.emp,
                 quoteApproved: {
-                    [sequelize.Op.or]: [true,null,undefined]
+                    [sequelize.Op.or]: [true,null]
                 } 
             }
         })
