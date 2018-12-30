@@ -7,6 +7,9 @@ import "./TaskList.scss";
 import { isNullOrUndefined } from "util";
 import { FaSortAmountUp, FaSortAmountDown} from "react-icons/fa";
 
+//array sort function
+var fastSort = require("fast-sort");
+
 class TaskList extends React.Component{
     constructor(props){
         super(props);
@@ -15,11 +18,13 @@ class TaskList extends React.Component{
             tasks: [],
             quoteApproved: false,
             employee: "",
-            tooltipOpen: false
+            tooltipOpen: false,
+            sortParameters: new Map([]),
+            asc: [],
+            desc: []
         };
         this.toggle = this.toggle.bind(this);
         this.getTasks = this.getTasks.bind(this);
-        this.toggle = this.toggle.bind(this);
     }
 
     componentWillMount = () => {
@@ -56,12 +61,15 @@ class TaskList extends React.Component{
                 });
             })
             .catch(err => console.log(err));
-
-            API.sortEmployeeTasks(this.state.employee, 'dueDate', 'ASC')
-            .then(res => console.log(res))
-            .catch(err => console.log(err));
- 
         }
+    }
+
+    printMap = () => {
+        for (var [key, value] of this.state.sortParameters.entries()) {
+            console.log(key + ' = ' + value);
+
+        }
+
     }
 
     render(){
@@ -82,13 +90,73 @@ class TaskList extends React.Component{
            <Container>
             <h5 style = {{'fontFamily': 'Noto Serif SC, serif'}}>Active Tasks</h5>
             <br/>
-            <table id="active" style={{'text-align':'center'}}>
+            <table id="active">
             <thead className="table-header">
                 <tr>
                     <th className="col">QUOTATION NUMBER</th>
-                    <th className="col"><FaSortAmountUp /> SERVICE <FaSortAmountDown /></th>
-                    <th className="col"><FaSortAmountUp /> CLIENT <FaSortAmountDown /></th>
-                    <th className="col"><FaSortAmountUp /> DATE ASSIGNED <FaSortAmountDown /></th>
+                    <th className="col">SERVICE<FaSortAmountUp id="sortServiceDesc" onClick = {() => {
+                        if(document.getElementById('sortServiceDesc').style.color !== 'yellow'){
+                            document.getElementById('sortServiceDesc').style.color = 'yellow';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('service',true),
+                                    desc: this.state.desc.filter(x => x !== "service").concat("service"),
+                                    asc: this.state.asc.filter(x => x !== "service")
+                                });
+                            if(document.getElementById('sortServiceAsc').style.color === 'lime'){
+                                document.getElementById('sortServiceAsc').style.color = 'black';
+                            }
+                        }
+                        else{
+                            document.getElementById('sortServiceDesc').style.color = 'black';
+                        }
+                        if(document.getElementById('sortServiceAsc').style.color === 'black' && document.getElementById('sortServiceDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('service',false),
+                                    desc: this.state.desc.filter(x => x !== "service"),
+                                    asc: this.state.asc.filter(x => x !== "service").concat("service")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {asc: this.state.asc}
+                                    ])).by([
+                                    {desc: this.state.desc}
+                                    ])
+                        });
+                            this.printMap();
+                    }} />  <FaSortAmountDown id="sortServiceAsc" onClick = {() => {
+                        if(document.getElementById('sortServiceAsc').style.color !== 'lime'){
+                            document.getElementById('sortServiceAsc').style.color = 'lime';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('service',false),
+                                    desc: this.state.desc.filter(x => x !== "service"),
+                                    asc: this.state.asc.filter(x => x !== "service").concat("service")
+                                });                        
+                            if(document.getElementById('sortServiceDesc').style.color === 'yellow'){
+                                document.getElementById('sortServiceDesc').style.color = 'black';
+                            }
+                        }
+                        else{
+                            document.getElementById('sortServiceAsc').style.color = 'black';
+                        }
+                        if(document.getElementById('sortServiceAsc').style.color === 'black' && document.getElementById('sortServiceDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('service',false),
+                                    desc: this.state.desc.filter(x => x !== "service"),
+                                    asc: this.state.asc.filter(x => x !== "service")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {asc: this.state.asc}
+                                    ])).by([
+                                    {desc: this.state.desc}
+                                    ])
+                        });
+                        this.printMap();
+                    }} /></th>
+                    <th className="col">CLIENT<FaSortAmountUp />  <FaSortAmountDown /></th>
+                    <th className="col">DATE ASSIGNED<FaSortAmountUp />  <FaSortAmountDown /></th>
                     <th className="col">DUE DATE</th>
                     <th className="col">SERVICE UNITS</th>
                     <th className="col">DATE COMPLETED (YYYY-MM-DD)</th>
@@ -218,7 +286,7 @@ class TaskList extends React.Component{
             <br/><br/>
             <h5 style = {{'fontFamily': 'Noto Serif SC, serif'}}>Completed Tasks</h5>
             <br/>
-            <table id="active" style={{'text-align':'center'}}>
+            <table id="active">
             <thead className="table-header">
                 <tr>
                     <th className="col">QUOTATION NUMBER</th>

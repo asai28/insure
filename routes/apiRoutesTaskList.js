@@ -5,6 +5,7 @@ module.exports = function(app) {
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,
+                quoteApproved: true || null || undefined
             }
         })
         .then(function(service){
@@ -14,20 +15,6 @@ module.exports = function(app) {
             res.json(service)
         });
    });
-
-   //sort field ascending or descending
-   app.get("/api/tasklist/:emp/sort/:field/:order", function(req, res){
-       db.TaskList.findAll({
-           where: {
-            quotationIssuedBy: req.params.emp
-           },
-           order: [
-               [req.params.field, req.params.order]
-           ]
-
-       })
-    
-   })
 
    app.put("/api/tasklist/:id", function(req,res){
         db.TaskList.update(
