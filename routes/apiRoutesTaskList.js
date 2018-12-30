@@ -1,5 +1,5 @@
 var db = require("../models");
-const Op = Sequelize.Op;
+const Op = sequelize.Op;
 
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
