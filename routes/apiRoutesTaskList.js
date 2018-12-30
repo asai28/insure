@@ -4,7 +4,7 @@ module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
         db.TaskList.findAll({
             where: {
-                quotationIssuedBy: req.params.emp,
+                quotationIssuedBy: req.params.emp.split("%20").join(" "),
             }
         })
         .then(function(service){
@@ -19,7 +19,7 @@ module.exports = function(app) {
    app.get("/api/tasklist/:emp/sort/:field/:order", function(req, res){
        db.TaskList.findAll({
            where: {
-            quotationIssuedBy: req.params.emp
+            quotationIssuedBy: req.params.emp.split("%20").join(" ")
            },
            order: [
                [req.params.field, req.params.order]

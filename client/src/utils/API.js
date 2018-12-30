@@ -78,7 +78,7 @@ export default{
         return axios.put("/api/tasklist/" + id, item)
     },
     sortEmployeeTasks: function(emp, field, order){
-        return axios.get("/api/tasklist/" + emp + "/sort?field=" + field + "&order=" + order)
+        return axios.get("/api/tasklist/" + emp + "/sort/" + field + "/" + order)
     }
 }
 
