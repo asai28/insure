@@ -1,4 +1,5 @@
 var db = require("../models");
+var sequelize = require('sequelize');
 
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
