@@ -1,11 +1,12 @@
-'use strict';
 var db = require("../models");
 
-module.exports = function(app, sequelize) {
+module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
         db.TaskList.findAll({
             where: {
-            [sequelize.Op.or]: [{quoteApproved: true},{quoteApproved: null}]    
+                quotationIssuedBy: req.params.emp,
+                quoteApproved: true,
+                quoteApproved: null
             }
         })
         .then(function(service){
