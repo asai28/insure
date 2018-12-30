@@ -1,11 +1,11 @@
 var db = require("../models");
 
 // // This may be confusing but here Sequelize (capital) references the standard library
-// var Sequelize = require("sequelize");
+var Sequelize = require("sequelize");
 // // sequelize (lowercase) references our connection to the DB.
 // var sequelize = require("../models");
 
-const Op = db.Sequelize.Op;
+const Op = Sequelize.Op;
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
         db.TaskList.findAll({
