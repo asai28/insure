@@ -57,7 +57,7 @@ class TaskList extends React.Component{
             })
             .catch(err => console.log(err));
 
-            API.sortEmployeeTasks(this.state.employee.split(" ").join("%20"), 'dueDate', 'ASC')
+            API.sortEmployeeTasks(this.state.employee, 'dueDate', 'ASC')
             .then(res => console.log(res))
             .catch(err => console.log(err));
  
