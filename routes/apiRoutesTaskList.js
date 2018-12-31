@@ -12,7 +12,7 @@ module.exports = function(app) {
             where: {
                 quotationIssuedBy: req.params.emp,  
                 quoteApproved:{
-                    [Op.not]: false
+                    [Op.or]: [true, {[Op.not]: null}]
                 }
                   
             }
