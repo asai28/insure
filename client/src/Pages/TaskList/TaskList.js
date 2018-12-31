@@ -202,8 +202,8 @@ class TaskList extends React.Component{
                           type="text"
                           name={"activeList"+ index + "_dateCompleted"}
                           id={"activeList"+ index + "_dateCompleted"}
-                          defaultValue = {"0000-00-00"}
-                          value={undefined}
+                          defaultValue = {isNullOrUndefined(x.dateCompleted) ? moment(x.dateCompleted).format("YYYY-MM-DD"): "0000-00-00"}
+                          value={isNullOrUndefined(x.dateCompleted) ? moment(x.dateCompleted).format("YYYY-MM-DD"): "0000-00-00"}
                           placeholder="Enter date of completion"
                           onChange={this.handleInputChange}
                         />
@@ -213,13 +213,13 @@ class TaskList extends React.Component{
                           type="textarea"
                           name={"activeList"+ index + "_status_notes_comments"}
                           id={"activeList"+ index + "_status_notes_comments"}
-                          value={undefined}
+                          value={x.status_notes_comments}
                           placeholder="Enter status/notes/comments"
                           onChange={this.handleInputChange}
                         />
                     </td>
                     <td key={"activeList" + index + "serviceDescription"}>
-                     {x.serviceDescription}
+                     <span style = {{'fontSize': '10px'}}>{x.serviceDescription}</span>
 
                     </td>
                     <td key={"activeList"+index+"_quoteApproved"}>
