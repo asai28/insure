@@ -10,9 +10,8 @@ module.exports = function(app) {
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,
-                quoteApproved:{
-                    [db.Sequelize.options.ne]: false
-                }
+                [db.Sequelize.options.ne]: {quoteApproved: false}
+                
             }
         })
         .then(function(service){
