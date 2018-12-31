@@ -10,14 +10,11 @@ module.exports = function(app) {
        console.log(db.Sequelize.options);
         db.TaskList.findAll({
             where: {
-                quotationIssuedBy: req.params.emp,
-                quoteApproved: {
-                $or: {
-                    $not: false,
-                    $eq: null
-                    
-                }
-            }
+                quotationIssuedBy: req.params.emp,  
+                $or: [
+                    {quoteApproved: true},
+                    {quoteApproved: {$eq: null}}
+                ]
             }
         })
         .then(function(service){
