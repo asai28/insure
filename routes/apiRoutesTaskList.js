@@ -3,6 +3,7 @@ var db = require("../models");
 // // This may be confusing but here Sequelize (capital) references the standard library
 // // sequelize (lowercase) references our connection to the DB.
 // var sequelize = require("../models");
+var Op = db.Sequelize.options
 
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
@@ -10,7 +11,10 @@ module.exports = function(app) {
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,
-                [db.Sequelize.options.ne]: {quoteApproved: false}
+                [Op.or]: {
+                    [Op.not]: false,
+                    [Op.eq]: null
+                }
                 
             }
         })
