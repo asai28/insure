@@ -7,21 +7,14 @@ var Op = db.Sequelize.options
 
 module.exports = function(app) {
     app.get("/api/tasklist/:emp", function(req, res){
-        console.log("---------------------------------------------------------------------------------\n");
-        console.log(Op);
-        console.log("---------------------------------------------------------------------------------\n");
        // Get all quotes which approved or not seen yet
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,  
-                quoteApproved: true,
-                quoteApproved: {
-                    [Op.eq]: null
-                }
+                quoteApproved: true
             }
         })
         .then(function(service){
-            console.log("heyoo");
             console.log(req.params.emp);
             console.log(service)
             res.json(service)
