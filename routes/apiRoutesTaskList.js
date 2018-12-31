@@ -11,17 +11,19 @@ module.exports = function(app) {
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,  
-                [Op.or]: [
-                      {
-                          quoteApproved: true
-                      }
-                      ,
-                      {
-                        quoteApproved: {
-                          [Op.eq]: null
-                        }
-                      }
-                    ]
+                quoteApproved:{
+                    [Op.or]: [
+                          {
+                              quoteApproved: true
+                          }
+                          ,
+                          {
+                            quoteApproved: {
+                              [Op.eq]: null
+                            }
+                          }
+                        ]
+                }
                   
             }
         })
