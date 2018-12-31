@@ -72,6 +72,12 @@ class TaskList extends React.Component{
 
     }
 
+    getCompletedTasks = () => {
+        API.completedTasks(this.state.employee)
+        .then(res => console.log(res.data))
+        .catch(err => console.log(err));
+    }
+
     render(){
         return (
             <div> 

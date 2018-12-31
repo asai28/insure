@@ -76,6 +76,9 @@ export default{
     },
     modifyTask: function(id, item){
         return axios.put("/api/tasklist/" + id, item)
+    },
+    completedTasks: function(employee){
+        return axios.get("/api/tasklist/" + employee + "/completed")
     }
 }
 
