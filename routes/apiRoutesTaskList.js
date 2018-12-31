@@ -6,12 +6,12 @@ var db = require("../models");
 
 module.exports = function(app) {
    app.get("/api/tasklist/:emp", function(req, res){
-       console.log(db);
+       console.log(db.Sequelize.options);
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,
                 quoteApproved:{
-                    [db.Sequelize.Op.or]: [true,{[db.Sequelize.Op.eq]: null}]
+                    [db.Sequelize.options.or]: [true,{[db.Sequelize.options.eq]: null}]
                 }
             }
         })
