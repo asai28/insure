@@ -6,8 +6,10 @@ var db = require("../models");
 var Op = db.Sequelize.options
 
 module.exports = function(app) {
-   app.get("/api/tasklist/:emp", function(req, res){
-       console.log(db.Sequelize.options);
+    app.get("/api/tasklist/:emp", function(req, res){
+        console.log("---------------------------------------------------------------------------------\n");
+        console.log(Op);
+        console.log("---------------------------------------------------------------------------------\n");
        // Get all quotes which approved or not seen yet
         db.TaskList.findAll({
             where: {
