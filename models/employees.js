@@ -8,13 +8,16 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.STRING,
             allowNull: false
         },
+        EMP_ROLE: {
+            type: DataTypes.STRING,
+            allowNull: false
+        },
         EMP_STATUS: {
             type: DataTypes.STRING,
             allowNull: false
         },
-        PASSWORD: {
-            type: DataTypes.STRING,
-            allowNull: false
+        PRIORITY: {
+            type: DataTypes.INTEGER
         }
     });
     return Employee;
