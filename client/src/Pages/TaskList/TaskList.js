@@ -16,6 +16,7 @@ class TaskList extends React.Component{
         this.state = {
             employee_data: [],
             tasks: [],
+            completedTasks: [],
             quoteApproved: false,
             employee: "",
             tooltipOpen: false,
@@ -59,6 +60,7 @@ class TaskList extends React.Component{
                 this.setState({
                     tasks: res.data
                 });
+                this.getCompletedTasks();
             })
             .catch(err => console.log(err));
         }
@@ -74,7 +76,12 @@ class TaskList extends React.Component{
 
     getCompletedTasks = () => {
         API.completedTasks(this.state.employee)
-        .then(res => console.log(res.data))
+        .then(res => {
+            console.log(res.data);
+            this.setState({
+                completedTasks: res.data
+            });
+        })
         .catch(err => console.log(err));
     }
 
@@ -177,13 +184,329 @@ class TaskList extends React.Component{
                         });
                         this.printMap();
                     }} /></th>
-                    <th className="col">CLIENT<FaSortAmountUp />  <FaSortAmountDown /></th>
-                    <th className="col">DATE ASSIGNED<FaSortAmountUp />  <FaSortAmountDown /></th>
-                    <th className="col">DUE DATE</th>
+
+
+                    <th className="col">CLIENT<FaSortAmountUp id="sortClientDesc" onClick = {() => {
+                        if(document.getElementById('sortClientDesc').style.color !== 'yellow'){
+                            document.getElementById('sortClientDesc').style.color = 'yellow';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('client',true),
+                                    desc: this.state.desc.filter(x => x !== "client").concat("client"),
+                                    asc: this.state.asc.filter(x => x !== "client")
+                                });
+                            if(document.getElementById('sortClientAsc').style.color === 'lime'){
+                                document.getElementById('sortClientAsc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('client',true),
+                                    desc: this.state.desc.filter(x => x !== "client"),
+                                });
+                            }
+                        }
+                        else{
+                            document.getElementById('sortClientDesc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('client',true),
+                                    desc: this.state.desc.filter(x => x !== "client"),
+                                });
+                        }
+                        if(document.getElementById('sortClientAsc').style.color === 'black' && document.getElementById('sortClientDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('client',false),
+                                    desc: this.state.desc.filter(x => x !== "client"),
+                                    asc: this.state.asc.filter(x => x !== "client")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {asc: this.state.asc}
+                                    ])).by([
+                                    {desc: this.state.desc}
+                                    ])
+                        });
+                            this.printMap();
+                    }}/>  
+                    <FaSortAmountDown id = "sortClientAsc" onClick = {() => {
+                        if(document.getElementById('sortClientAsc').style.color !== 'lime'){
+                            document.getElementById('sortClientAsc').style.color = 'lime';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('client',false),
+                                    desc: this.state.desc.filter(x => x !== "client"),
+                                    asc: this.state.asc.filter(x => x !== "client").concat("client")
+                                });                        
+                            if(document.getElementById('sortClientDesc').style.color === 'yellow'){
+                                document.getElementById('sortClientDesc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('client',false),
+                                    desc: this.state.desc.filter(x => x !== "client"),
+                                });
+                            }
+                        }
+                        else{
+                            document.getElementById('sortClientAsc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('client',false),
+                                    asc: this.state.asc.filter(x => x !== "client")
+                                });
+                        }
+                        if(document.getElementById('sortClientAsc').style.color === 'black' && document.getElementById('sortClientDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('client',false),
+                                    desc: this.state.desc.filter(x => x !== "client"),
+                                    asc: this.state.asc.filter(x => x !== "client")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {desc: this.state.desc}
+                                    ])).by([
+                                    {asc: this.state.asc}
+                                    ])
+                        });
+                        this.printMap();
+                    }}/></th>
+
+                    <th className="col">DATE ASSIGNED<FaSortAmountUp id= "sortDateAssignedDesc" onClick = {() => {
+                        if(document.getElementById('sortDateAssignedDesc').style.color !== 'yellow'){
+                            document.getElementById('sortDateAssignedDesc').style.color = 'yellow';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateAssigned',true),
+                                    desc: this.state.desc.filter(x => x !== "DateAssigned").concat("DateAssigned"),
+                                    asc: this.state.asc.filter(x => x !== "DateAssigned")
+                                });
+                            if(document.getElementById('sortDateAssignedAsc').style.color === 'lime'){
+                                document.getElementById('sortDateAssignedAsc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateAssigned',true),
+                                    desc: this.state.desc.filter(x => x !== "DateAssigned"),
+                                });
+                            }
+                        }
+                        else{
+                            document.getElementById('sortDateAssignedDesc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateAssigned',true),
+                                    desc: this.state.desc.filter(x => x !== "DateAssigned"),
+                                });
+                        }
+                        if(document.getElementById('sortDateAssignedAsc').style.color === 'black' && document.getElementById('sortDateAssignedDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
+                                    desc: this.state.desc.filter(x => x !== "DateAssigned"),
+                                    asc: this.state.asc.filter(x => x !== "DateAssigned")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {asc: this.state.asc}
+                                    ])).by([
+                                    {desc: this.state.desc}
+                                    ])
+                        });
+                            this.printMap();
+                    }}/>  
+                    
+                    <FaSortAmountDown id= "sortDateAssignedAsc" onClick = {() => {
+                        if(document.getElementById('sortDateAssignedAsc').style.color !== 'lime'){
+                            document.getElementById('sortDateAssignedAsc').style.color = 'lime';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
+                                    desc: this.state.desc.filter(x => x !== "DateAssigned"),
+                                    asc: this.state.asc.filter(x => x !== "DateAssigned").concat("DateAssigned")
+                                });                        
+                            if(document.getElementById('sortDateAssignedDesc').style.color === 'yellow'){
+                                document.getElementById('sortDateAssignedDesc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
+                                    desc: this.state.desc.filter(x => x !== "DateAssigned"),
+                                });
+                            }
+                        }
+                        else{
+                            document.getElementById('sortDateAssignedAsc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
+                                    asc: this.state.asc.filter(x => x !== "DateAssigned")
+                                });
+                        }
+                        if(document.getElementById('sortDateAssignedAsc').style.color === 'black' && document.getElementById('sortDateAssignedDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
+                                    desc: this.state.desc.filter(x => x !== "DateAssigned"),
+                                    asc: this.state.asc.filter(x => x !== "DateAssigned")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {desc: this.state.desc}
+                                    ])).by([
+                                    {asc: this.state.asc}
+                                    ])
+                        });
+                        this.printMap();
+                    }}/></th>
+
+                    <th className="col">DUE DATE <FaSortAmountUp id = "sortDueDateDesc" onClick = {() => {
+                        if(document.getElementById('sortDueDateDesc').style.color !== 'yellow'){
+                            document.getElementById('sortDueDateDesc').style.color = 'yellow';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DueDate',true),
+                                    desc: this.state.desc.filter(x => x !== "DueDate").concat("DueDate"),
+                                    asc: this.state.asc.filter(x => x !== "DueDate")
+                                });
+                            if(document.getElementById('sortDueDateAsc').style.color === 'lime'){
+                                document.getElementById('sortDueDateAsc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DueDate',true),
+                                    desc: this.state.desc.filter(x => x !== "DueDate"),
+                                });
+                            }
+                        }
+                        else{
+                            document.getElementById('sortDueDateDesc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DueDate',true),
+                                    desc: this.state.desc.filter(x => x !== "DueDate"),
+                                });
+                        }
+                        if(document.getElementById('sortDueDateAsc').style.color === 'black' && document.getElementById('sortDueDateDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    desc: this.state.desc.filter(x => x !== "DueDate"),
+                                    asc: this.state.asc.filter(x => x !== "DueDate")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {asc: this.state.asc}
+                                    ])).by([
+                                    {desc: this.state.desc}
+                                    ])
+                        });
+                            this.printMap();
+                    }}/>
+                    
+                    <FaSortAmountDown id = "sortDueDateAsc" onClick = {() => {
+                        if(document.getElementById('sortDueDateAsc').style.color !== 'lime'){
+                            document.getElementById('sortDueDateAsc').style.color = 'lime';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    desc: this.state.desc.filter(x => x !== "DueDate"),
+                                    asc: this.state.asc.filter(x => x !== "DueDate").concat("DueDate")
+                                });                        
+                            if(document.getElementById('sortDueDateDesc').style.color === 'yellow'){
+                                document.getElementById('sortDueDateDesc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    desc: this.state.desc.filter(x => x !== "DueDate"),
+                                });
+                            }
+                        }
+                        else{
+                            document.getElementById('sortDueDateAsc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    asc: this.state.asc.filter(x => x !== "DueDate")
+                                });
+                        }
+                        if(document.getElementById('sortDueDateAsc').style.color === 'black' && document.getElementById('sortDueDateDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    desc: this.state.desc.filter(x => x !== "DueDate"),
+                                    asc: this.state.asc.filter(x => x !== "DueDate")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {desc: this.state.desc}
+                                    ])).by([
+                                    {asc: this.state.asc}
+                                    ])
+                        });
+                        this.printMap();
+                    }}/></th>
+
+
                     <th className="col">SERVICE UNITS</th>
-                    <th className="col">DATE COMPLETED (YYYY-MM-DD)</th>
+                    <th className="col">DATE COMPLETED (YYYY-MM-DD) <FaSortAmountUp id = "sortDateCompletedDesc" onClick = {() => {
+                        if(document.getElementById('sortDateCompletedDesc').style.color !== 'yellow'){
+                            document.getElementById('sortDateCompletedDesc').style.color = 'yellow';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateCompleted',true),
+                                    desc: this.state.desc.filter(x => x !== "DateCompleted").concat("DateCompleted"),
+                                    asc: this.state.asc.filter(x => x !== "DateCompleted")
+                                });
+                            if(document.getElementById('sortDateCompletedAsc').style.color === 'lime'){
+                                document.getElementById('sortDateCompletedAsc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateCompleted',true),
+                                    desc: this.state.desc.filter(x => x !== "DateCompleted"),
+                                });
+                            }
+                        }
+                        else{
+                            document.getElementById('sortDateCompletedDesc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateCompleted',true),
+                                    desc: this.state.desc.filter(x => x !== "DateCompleted"),
+                                });
+                        }
+                        if(document.getElementById('sortDateCompletedAsc').style.color === 'black' && document.getElementById('sortDateCompletedDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                    desc: this.state.desc.filter(x => x !== "DateCompleted"),
+                                    asc: this.state.asc.filter(x => x !== "DateCompleted")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {asc: this.state.asc}
+                                    ])).by([
+                                    {desc: this.state.desc}
+                                    ])
+                        });
+                            this.printMap();
+                    }}/> 
+                    <FaSortAmountDown id = "sortDateCompletedAsc" onClick = {() => {
+                        if(document.getElementById('sortDateCompletedAsc').style.color !== 'lime'){
+                            document.getElementById('sortDateCompletedAsc').style.color = 'lime';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                    desc: this.state.desc.filter(x => x !== "DateCompleted"),
+                                    asc: this.state.asc.filter(x => x !== "DateCompleted").concat("DateCompleted")
+                                });                        
+                            if(document.getElementById('sortDateCompletedDesc').style.color === 'yellow'){
+                                document.getElementById('sortDateCompletedDesc').style.color = 'black';
+                                this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                    desc: this.state.desc.filter(x => x !== "DateCompleted"),
+                                });
+                            }
+                        }
+                        else{
+                            document.getElementById('sortDateCompletedAsc').style.color = 'black';
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                    asc: this.state.asc.filter(x => x !== "DateCompleted")
+                                });
+                        }
+                        if(document.getElementById('sortDateCompletedAsc').style.color === 'black' && document.getElementById('sortDateCompletedDesc').style.color === 'black'){
+                            this.setState({
+                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                    desc: this.state.desc.filter(x => x !== "DateCompleted"),
+                                    asc: this.state.asc.filter(x => x !== "DateCompleted")
+                                });
+                        }
+                        this.setState({
+                            tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {desc: this.state.desc}
+                                    ])).by([
+                                    {asc: this.state.asc}
+                                    ])
+                        });
+                        this.printMap();
+                    }}/> </th>
                     <th className="col">STATUS/NOTES/COMMENTS</th>
-                    <th className="col">SERVICE DESCRIPTION</th>
+                    {/* <th className="col">SERVICE DESCRIPTION</th> */}
                     <th className="col">QUOTE APPROVED</th>
                     <th className="col">COMPLETED</th>
                 </tr>
@@ -191,7 +514,7 @@ class TaskList extends React.Component{
             <tbody>
                 {this.state.tasks.map((x, index) => 
                 <tr key={"activeList"+index} className="table-row">
-                    <td key={"activeList"+index+"_quotationNumber"}>{x.quotationNumber}</td>
+                    <td key={"activeList"+index+"_quotationNumber"}>{"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023)}</td>
                     <td key={"activeList"+index+"_service"}>{x.service}</td>
                     <td key={"activeList"+index+"_client"}>{x.client}</td>
                     <td key={"activeList"+index+"_dateAssigned"}>{moment(x.dateAssigned).format("YYYY-MM-DD")}</td>
@@ -202,8 +525,7 @@ class TaskList extends React.Component{
                           type="text"
                           name={"activeList"+ index + "_dateCompleted"}
                           id={"activeList"+ index + "_dateCompleted"}
-                          defaultValue = {isNullOrUndefined(x.dateCompleted) ? moment(x.dateCompleted).format("YYYY-MM-DD"): "0000-00-00"}
-                          value={isNullOrUndefined(x.dateCompleted) ? moment(x.dateCompleted).format("YYYY-MM-DD"): "0000-00-00"}
+                          defaultValue={moment(x.dateCompleted).format("YYYY-MM-DD")}
                           placeholder="Enter date of completion"
                           onChange={this.handleInputChange}
                         />
@@ -213,20 +535,20 @@ class TaskList extends React.Component{
                           type="textarea"
                           name={"activeList"+ index + "_status_notes_comments"}
                           id={"activeList"+ index + "_status_notes_comments"}
-                          value={x.status_notes_comments}
+                          defaultValue={x.status_notes_comments}
                           placeholder="Enter status/notes/comments"
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    <td key={"activeList" + index + "serviceDescription"}>
+                    {/* <td key={"activeList" + index + "serviceDescription"}>
                      <span style = {{'fontSize': '10px'}}>{x.serviceDescription}</span>
 
-                    </td>
+                    </td> */}
                     <td key={"activeList"+index+"_quoteApproved"}>
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={true} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={true}  onChange = {this.handleInputChange} checked = {x.quoteApproved} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
                                     // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
@@ -236,7 +558,27 @@ class TaskList extends React.Component{
                                     status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
-                                .then(() => console.log("Quote approved"))
+                                .then(res => {
+                                    console.log("Quote approved");
+                                    console.log(res.data);
+                                    API.getEmployeeTasks(this.state.employee.split(" ").join("%20"))
+                                    .then(res => {
+                                        console.log(res.data);
+                                        this.setState({
+                                            tasks: res.data,
+                                        });
+
+                                    this.setState({
+                                    tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {desc: this.state.desc}
+                                    ])).by([
+                                    {asc: this.state.asc}
+                                    ])
+                        });
+                                    })
+                                    .catch(err => console.log(err));
+                
+                                    })
                                 .catch(err => console.log(err))
                             }}/>{' '}
                             Yes
@@ -244,7 +586,7 @@ class TaskList extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={false} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={false}  onChange = {this.handleInputChange} checked = {!x.quoteApproved} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
                                     // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
@@ -266,9 +608,7 @@ class TaskList extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} disabled={
-                                isNullOrUndefined(x.quoteApproved)
-                                } value={true} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_completed"} checked={x.completed} value={true} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
                                 console.log(document.getElementById("activeList"+index+ "_dateCompleted").value, document.getElementById("activeList"+ index + "_status_notes_comments").value);
                                 console.log(!isNullOrUndefined(x.quoteApproved))
@@ -279,7 +619,9 @@ class TaskList extends React.Component{
                                     status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
-                                .then(() => console.log("Task completed"))
+                                .then(() => {console.log("Task completed");
+                                this.getCompletedTasks();
+                                })
                                 .catch(err => console.log(err))
                             }}/>{' '}
                             Yes
@@ -287,7 +629,7 @@ class TaskList extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} value={false} disabled ={
+                            <Input type="radio" name={"activeList"+index+"_completed"} checked={!x.completed} value={false} onChange = {this.handleInputChange} disabled ={
                                 isNullOrUndefined(x.quoteApproved)
                                 } onClick = {() => {
                              console.log(x.id);
@@ -330,7 +672,7 @@ class TaskList extends React.Component{
                 </tr>
             </thead>
             <tbody>
-                {this.state.tasks.filter(x => !isNullOrUndefined(x.dateCompleted)).map((x, index) => 
+                {this.state.completedTasks.filter(x => x.completed === true).map((x, index) => 
                 <tr key={"completedList"+index} className="table-row">
                     <td key={"completedList"+index+"_quotationNumber"}>{x.quotationNumber}</td>
                     <td key={"completedList"+index+"_service"}>{x.service}</td>
@@ -365,13 +707,13 @@ class TaskList extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name="quoteApproved" value={true}/>{' '}
+                            <Input type="radio" name="quoteApproved" value={true} onChange = {this.handleInputChange}/>{' '}
                             Yes
                             </Label>
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name="quoteApproved" value={false} />{' '}
+                            <Input type="radio" name="quoteApproved" value={false} onChange = {this.handleInputChange} />{' '}
                             No
                             </Label>
                         </FormGroup>
@@ -381,13 +723,13 @@ class TaskList extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name="quoteApproved" value={true}/>{' '}
+                            <Input type="radio" name="quoteApproved" value={true} onChange = {this.handleInputChange}/>{' '}
                             Yes
                             </Label>
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name="quoteApproved" value={false} />{' '}
+                            <Input type="radio" name="quoteApproved" value={false} onChange = {this.handleInputChange}/>{' '}
                             No
                             </Label>
                         </FormGroup>

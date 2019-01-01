@@ -11,7 +11,8 @@ module.exports = function(app) {
         db.TaskList.findAll({
             where: {
                 quotationIssuedBy: req.params.emp,  
-                quoteApproved: true
+                quoteApproved: true,
+                completed: false
             }
         })
         .then(function(service){
