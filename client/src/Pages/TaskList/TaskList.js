@@ -26,6 +26,10 @@ class TaskList extends React.Component{
         };
         this.toggle = this.toggle.bind(this);
         this.getTasks = this.getTasks.bind(this);
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.getCompletedTasks = this.getCompletedTasks.bind(this);
+        this.printMap = this.printMap.bind(this);
+
     }
 
     componentWillMount = () => {

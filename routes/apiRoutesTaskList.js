@@ -4,8 +4,39 @@ var db = require("../models");
 // // sequelize (lowercase) references our connection to the DB.
 // var sequelize = require("../models");
 var Op = db.Sequelize.options
+var url = require('url');
 
 module.exports = function(app) {
+
+    //all employee tasks
+    app.get("/api/tasklist", function(req, res){
+        // Get all quotes which approved or not seen yet
+         db.TaskList.findAll({
+             
+         })
+         .then(function(service){
+             console.log(req.params.emp);
+             console.log(service)
+             res.json(service)
+         });
+    });
+
+    //filter employee tasks
+    app.get("/api/tasklist/sortBy?emp=:quotationIssuedBy&quoteApproved=:quoteApproved&completed=:completed", function(req, res){
+        var url_parts = url.parse(req.url, true);
+        var query = url_parts.query;
+        // Get all quotes which approved or not seen yet
+         db.TaskList.findAll({
+            quotationIssuedBy: query.quotationIssuedBy,
+            quoteApproved: query.quoteApproved,
+            completed: query.completed
+         })
+         .then(function(service){
+             console.log(query);
+             res.json(service)
+         });
+    });
+
     app.get("/api/tasklist/:emp", function(req, res){
        // Get all quotes which approved or not seen yet
         db.TaskList.findAll({

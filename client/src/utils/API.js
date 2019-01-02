@@ -79,6 +79,12 @@ export default{
     },
     completedTasks: function(employee){
         return axios.get("/api/tasklist/" + employee + "/completed")
+    },
+    allTasks: function(){
+        return axios.get("/api/tasklist")
+    },
+    filterTasks: function(quotationIssuedBy, quoteApproved, completed){
+        return axios.get(`/api/tasklist/sortBy?emp=${quotationIssuedBy}&quoteApproved=${quoteApproved}&completed=${completed}`)
     }
 }
 

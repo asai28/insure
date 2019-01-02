@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import CONSTANTS from "./constants/routes.js";
 import ServiceRequestForm from "./Pages/ServiceRequestForm/ServiceRequestForm";
 import TaskList from "./Pages/TaskList/TaskList";
+import Admin_IC from "./Pages/Admin_IC/Admin";
 import {Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem} from "reactstrap";
 import routes from "./constants/routes";
 // import firebase from './firebase.js';
@@ -46,7 +47,11 @@ class App extends React.Component{
                   Options
                 </DropdownToggle>
                 <DropdownMenu right>
-                  <DropdownItem>Option 1</DropdownItem>
+                  <DropdownItem>
+                  <NavItem>
+                    <NavLink href="/adminIC">Admin_IC</NavLink>
+                  </NavItem>
+                  </DropdownItem>
                   <DropdownItem>Option 2</DropdownItem>
                   <DropdownItem divider />
                   <DropdownItem>Reset</DropdownItem>
@@ -61,6 +66,7 @@ class App extends React.Component{
         {/* <Route exact={true} path={routes.LOGIN} component={LoginPage} />
         <Route exact={true} path={routes.REGISTER} component={RegisterPage} /> */}
         <Route exact={true} path={routes.TASK_LIST} component={TaskList} />
+        <Route exact={true} path={routes.ADMIN_IC} component = {Admin_IC}/>
         </Switch>
         </Router>
     </div>
