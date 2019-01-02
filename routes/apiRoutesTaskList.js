@@ -22,14 +22,14 @@ module.exports = function(app) {
     });
 
     //filter employee tasks
-    app.get("/api/tasklist/sortBy?emp=:quotationIssuedBy&quoteApproved=:quoteApproved&completed=:completed", function(req, res){
+    app.get("/api/tasklist/sortBy", function(req, res){
         var url_parts = url.parse(req.url, true);
         var query = url_parts.query;
         // Get all quotes which approved or not seen yet
          db.TaskList.findAll({
             quotationIssuedBy: query.quotationIssuedBy,
-            quoteApproved: query.quoteApproved,
-            completed: query.completed
+            // quoteApproved: query.quoteApproved,
+            // completed: query.completed
          })
          .then(function(service){
              console.log(query);

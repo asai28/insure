@@ -66,7 +66,10 @@ class Admin_IC extends React.Component{
     filterResults = () => {
         
         API.filterTasks(this.state.employee, this.state.quoteApproval, this.state.completed)
-        .then(res => console.log(res.data))
+        .then(res => {
+            console.log(res);
+            console.log(this.state.employee, this.state.quoteApproval, this.state.completed);
+        })
         .catch(err => console.log(err));
     }
 
