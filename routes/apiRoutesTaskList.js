@@ -30,9 +30,11 @@ module.exports = function(app) {
         console.log("-----------------------------------------------------------\n");
         // Get all quotes which approved or not seen yet
          db.TaskList.findAll({
-            quotationIssuedBy: query.quotationIssuedBy,
-            // quoteApproved: query.quoteApproved,
-            // completed: query.completed
+             where: {
+                 quotationIssuedBy: query.quotationIssuedBy,
+                 // quoteApproved: query.quoteApproved,
+                 // completed: query.completed
+             }
          })
          .then(function(service){
              console.log(query);
