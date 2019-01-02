@@ -32,8 +32,8 @@ module.exports = function(app) {
          db.TaskList.findAll({
              where: {
                  quotationIssuedBy: query.quotationIssuedBy,
-                 // quoteApproved: query.quoteApproved,
-                 // completed: query.completed
+                 quoteApproved: query.quoteApproved,
+                 completed: query.completed
              }
          })
          .then(function(service){

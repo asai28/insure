@@ -69,6 +69,9 @@ class Admin_IC extends React.Component{
         .then(res => {
             console.log(res);
             console.log(this.state.employee);
+            this.setState({
+                tasks: res.data
+            })
         })
         .catch(err => console.log(err));
     }
@@ -95,7 +98,7 @@ class Admin_IC extends React.Component{
                     var item = {
             quoteApproved: this.state.quoteApproval
         }
-        this.filterResults(item);
+        this.filterResults();
                 }}>
                 <option value="">Quote approval</option>
                 <option value={true}>Yes</option>
@@ -106,7 +109,7 @@ class Admin_IC extends React.Component{
                     var item = {
             completed: this.state.completed
         }
-        this.filterResults(item);
+        this.filterResults();
                 }}>
                 <option value="">Completed tasks</option>
                 <option value={true}>Yes</option>
