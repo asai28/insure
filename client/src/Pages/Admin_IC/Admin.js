@@ -65,10 +65,10 @@ class Admin_IC extends React.Component{
 
     filterResults = () => {
         
-        API.filterTasks(this.state.employee, this.state.quoteApproval, this.state.completed)
+        API.filterTasks(this.state.employee)
         .then(res => {
             console.log(res);
-            console.log(this.state.employee, this.state.quoteApproval, this.state.completed);
+            console.log(this.state.employee);
         })
         .catch(err => console.log(err));
     }
@@ -85,7 +85,7 @@ class Admin_IC extends React.Component{
                     var item = {
             quotationIssuedBy: this.state.employee
         }
-        this.filterResults(item);
+        this.filterResults();
                 }}>
                 <option value="">Employee name</option>
                     {this.state.employees.map(x => <option value={x.EMP_NAME}>{x.EMP_NAME}</option>)}

@@ -25,6 +25,9 @@ module.exports = function(app) {
     app.get("/api/tasklist/sortBy", function(req, res){
         var url_parts = url.parse(req.url, true);
         var query = url_parts.query;
+        console.log("----------------------------------------------------------\n");
+        console.log(query)
+        console.log("-----------------------------------------------------------\n");
         // Get all quotes which approved or not seen yet
          db.TaskList.findAll({
             quotationIssuedBy: query.quotationIssuedBy,
