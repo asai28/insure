@@ -92,6 +92,26 @@ module.exports = function(app) {
             res.json(service)
         });
    });
+
+   app.post("/api/taskList", function(req, res){
+    db.TaskList.create({
+        quotationIssuedBy: req.body.quotationIssuedBy,
+        quotationNumber: req.body.quotationNumber,
+        service: req.body.service,
+        client: req.body.client,
+        details: req.body.instructions,
+        dateAssigned: req.body.startDate, //sort
+        dueDate: req.body.validThru,
+        serviceUnits: req.body.qty,
+        dateCompleted: req.body.dateCompleted,
+        status_notes_comments: req.body.comments,
+        serviceDescription: req.body.serviceDescription,
+        quoteApproved: req.body.quoteApproved,
+        completed: req.body.completed
+    }).then(function(task) {
+      res.json(task);
+    });
+});
 }
 
 

@@ -5,6 +5,10 @@ import API from "../../utils/API";
 import moment from "moment";
 import { isNullOrUndefined } from "util";
 import { FaSortAmountUp, FaSortAmountDown, FaDivide} from "react-icons/fa";
+import DatePicker from "react-datepicker";
+import Moment from "react-moment";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 //array sort function
 var fastSort = require("fast-sort");
@@ -14,12 +18,20 @@ class Admin_IC extends React.Component{
         super(props);
         this.state = {
             tasks: [],
-            employees: []
+            employees: [],
+            asc: [],
+            desc: [],
+            companyNames: [],
+            dateAssigned: moment(),
+            dueDate: moment()
+            .add(90, "days")
+            .format("YYYY-MM-DD")
         };
         
         this.getTasks = this.getTasks.bind(this);
         this.handleInputChange = this.handleInputChange.bind(this);
         this.filterResults = this.filterResults.bind(this);
+        this.handleChange = this.handleChange.bind(this);
     }
 
     handleInputChange = e => {
@@ -44,6 +56,19 @@ class Admin_IC extends React.Component{
     }
 
     componentWillMount = () => {
+        API.getCompany()
+      .then(res => {
+          var uniqueCompanies = [];
+        for (let i = 0; i < res.data.length; ++i) {
+          if (uniqueCompanies.indexOf(res.data[i].companyName) === -1 && res.data[i].companyName.trim() !== "") {
+            uniqueCompanies.push(res.data[i].companyName);
+          }
+        }
+        this.setState({ companyNames: uniqueCompanies });
+        console.log("Companies table loaded");
+      })
+      .catch(err => console.log(err));
+
         API.allTasks()
         .then(res => {
             this.setState({
@@ -65,16 +90,30 @@ class Admin_IC extends React.Component{
 
     filterResults = () => {
         
-        API.filterTasks(this.state.employee)
+        API.filterTasks(this.state.employee, this.state.quoteApproved, this.state.completed)
         .then(res => {
             console.log(res);
-            console.log(this.state.employee);
+            console.log(this.state.employee, this.state.quoteApproved, this.state.completed);
             this.setState({
                 tasks: res.data
             })
         })
         .catch(err => console.log(err));
     }
+
+    handleChange(date) {
+        this.setState({
+          dateAssigned: date
+        });
+        this.setState({
+            dueDate: moment(this.state.dateAssigned)
+            .add(90, "days")
+            .format("YYYY-MM-DD")
+        });
+        document.getElementById("dueDate").value = moment(
+          this.state.dueDate
+        ).format("YYYY-MM-DD");
+      }
 
     render(){
         return (
@@ -94,9 +133,9 @@ class Admin_IC extends React.Component{
                     {this.state.employees.map(x => <option value={x.EMP_NAME}>{x.EMP_NAME}</option>)}
                 </Input>
                 
-                <Input type="select" name="quoteApproval" id="quoteApproval" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left'}} onClick = {() => {
+                <Input type="select" name="quoteApproved" id="quoteApproved" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left'}} onClick = {() => {
                     var item = {
-            quoteApproved: this.state.quoteApproval
+            quoteApproved: this.state.quoteApproved
         }
         this.filterResults();
                 }}>
@@ -116,8 +155,77 @@ class Admin_IC extends React.Component{
                 <option value={false}>No</option>
                 </Input>
             </FormGroup>
+            
+            <br/><br/>
+            <Label>
+                ADD OR REMOVE TASK FOR EMPLOYEE
+            </Label>
+            <FormGroup id="addTask">
+                <Input type="select" name="toEmployee" id="employee" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}>
+                <option value="">Employee assigned task</option>
+                    {this.state.employees.map(x => <option value={x.EMP_NAME}>{x.EMP_NAME}</option>)}
+                </Input>
+                <Input type="text" name="task" id="task" placeholder="Enter task here" onChange = {this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}/>
+                <Input type="select" name="client" id="client" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}>
+                <option value="">Choose Client</option>
+                    {this.state.companyNames.map(x => <option value={x}>{x}</option>)}
+                </Input>
+                <br/>
+                <Input
+                type="textarea"
+                name="details"
+                id="details"
+                onChange={this.handleInputChange}
+                placeholder = "Enter task details"
+            />
+                
+                <br/> <br/>
+                <DatePicker
+                selected={this.state.dateAssigned}
+                onChange={this.handleChange}
+                name="dateAssigned"
+                placeholder="Date Assigned"
+                style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
+              />
+              <br/>
+              
+              <Input
+                type="text"
+                name="dueDate"
+                id="dueDate"
+                onChange={this.handleInputChange}
+                placeholder = "Enter due date"
+                style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
+            />
+                <Input
+                type="text"
+                name="qty"
+                id="qty"
+                onChange={this.handleInputChange}
+                placeholder = "Enter qty of task if applicable"
+                defaultValue = {this.state.qty}
+                style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
+            />
+                <Button onClick = {() => {
+                    var item = {
+                        quotationIssuedBy: this.state.toEmployee,
+                        quotationNumber: "NULL",
+        service: this.state.task,
+        client: this.state.client,
+        instructions: this.state.details,
+        startDate: this.state.dateAssigned, //sort
+        validThru: this.state.dueDate,
+        qty: this.state.qty,
+                    };
+                    API.addTask(item)
+                    .then(() => console.log("Task added!"))
+                    .catch(err => console.log(err));
+                }}>Submit</Button>
+            </FormGroup>  
             </Jumbotron>
+
             <Container>
+
             <h5 style = {{'fontFamily': 'Noto Serif SC, serif'}}>Active Tasks</h5>
             <br/>
             <table id="active">
@@ -128,14 +236,12 @@ class Admin_IC extends React.Component{
                         if(document.getElementById('sortServiceDesc').style.color !== 'yellow'){
                             document.getElementById('sortServiceDesc').style.color = 'yellow';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('service',true),
                                     desc: this.state.desc.filter(x => x !== "service").concat("service"),
                                     asc: this.state.asc.filter(x => x !== "service")
                                 });
                             if(document.getElementById('sortServiceAsc').style.color === 'lime'){
                                 document.getElementById('sortServiceAsc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('service',true),
                                     desc: this.state.desc.filter(x => x !== "service"),
                                 });
                             }
@@ -143,13 +249,11 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortServiceDesc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('service',true),
                                     desc: this.state.desc.filter(x => x !== "service"),
                                 });
                         }
                         if(document.getElementById('sortServiceAsc').style.color === 'black' && document.getElementById('sortServiceDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('service',false),
                                     desc: this.state.desc.filter(x => x !== "service"),
                                     asc: this.state.asc.filter(x => x !== "service")
                                 });
@@ -161,19 +265,17 @@ class Admin_IC extends React.Component{
                                     {desc: this.state.desc}
                                     ])
                         });
-                            this.printMap();
+                            
                     }} />  <FaSortAmountDown id="sortServiceAsc" onClick = {() => {
                         if(document.getElementById('sortServiceAsc').style.color !== 'lime'){
                             document.getElementById('sortServiceAsc').style.color = 'lime';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('service',false),
                                     desc: this.state.desc.filter(x => x !== "service"),
                                     asc: this.state.asc.filter(x => x !== "service").concat("service")
                                 });                        
                             if(document.getElementById('sortServiceDesc').style.color === 'yellow'){
                                 document.getElementById('sortServiceDesc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('service',false),
                                     desc: this.state.desc.filter(x => x !== "service"),
                                 });
                             }
@@ -181,13 +283,11 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortServiceAsc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('service',false),
                                     asc: this.state.asc.filter(x => x !== "service")
                                 });
                         }
                         if(document.getElementById('sortServiceAsc').style.color === 'black' && document.getElementById('sortServiceDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('service',false),
                                     desc: this.state.desc.filter(x => x !== "service"),
                                     asc: this.state.asc.filter(x => x !== "service")
                                 });
@@ -199,7 +299,7 @@ class Admin_IC extends React.Component{
                                     {asc: this.state.asc}
                                     ])
                         });
-                        this.printMap();
+                        
                     }} /></th>
 
 
@@ -207,14 +307,12 @@ class Admin_IC extends React.Component{
                         if(document.getElementById('sortClientDesc').style.color !== 'yellow'){
                             document.getElementById('sortClientDesc').style.color = 'yellow';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('client',true),
                                     desc: this.state.desc.filter(x => x !== "client").concat("client"),
                                     asc: this.state.asc.filter(x => x !== "client")
                                 });
                             if(document.getElementById('sortClientAsc').style.color === 'lime'){
                                 document.getElementById('sortClientAsc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('client',true),
                                     desc: this.state.desc.filter(x => x !== "client"),
                                 });
                             }
@@ -222,13 +320,11 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortClientDesc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('client',true),
                                     desc: this.state.desc.filter(x => x !== "client"),
                                 });
                         }
                         if(document.getElementById('sortClientAsc').style.color === 'black' && document.getElementById('sortClientDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('client',false),
                                     desc: this.state.desc.filter(x => x !== "client"),
                                     asc: this.state.asc.filter(x => x !== "client")
                                 });
@@ -240,20 +336,18 @@ class Admin_IC extends React.Component{
                                     {desc: this.state.desc}
                                     ])
                         });
-                            this.printMap();
+                            
                     }}/>  
                     <FaSortAmountDown id = "sortClientAsc" onClick = {() => {
                         if(document.getElementById('sortClientAsc').style.color !== 'lime'){
                             document.getElementById('sortClientAsc').style.color = 'lime';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('client',false),
                                     desc: this.state.desc.filter(x => x !== "client"),
                                     asc: this.state.asc.filter(x => x !== "client").concat("client")
                                 });                        
                             if(document.getElementById('sortClientDesc').style.color === 'yellow'){
                                 document.getElementById('sortClientDesc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('client',false),
                                     desc: this.state.desc.filter(x => x !== "client"),
                                 });
                             }
@@ -261,13 +355,11 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortClientAsc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('client',false),
                                     asc: this.state.asc.filter(x => x !== "client")
                                 });
                         }
                         if(document.getElementById('sortClientAsc').style.color === 'black' && document.getElementById('sortClientDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('client',false),
                                     desc: this.state.desc.filter(x => x !== "client"),
                                     asc: this.state.asc.filter(x => x !== "client")
                                 });
@@ -279,21 +371,19 @@ class Admin_IC extends React.Component{
                                     {asc: this.state.asc}
                                     ])
                         });
-                        this.printMap();
+                       
                     }}/></th>
 
                     <th className="col">DATE ASSIGNED<FaSortAmountUp id= "sortDateAssignedDesc" onClick = {() => {
                         if(document.getElementById('sortDateAssignedDesc').style.color !== 'yellow'){
                             document.getElementById('sortDateAssignedDesc').style.color = 'yellow';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateAssigned',true),
                                     desc: this.state.desc.filter(x => x !== "DateAssigned").concat("DateAssigned"),
                                     asc: this.state.asc.filter(x => x !== "DateAssigned")
                                 });
                             if(document.getElementById('sortDateAssignedAsc').style.color === 'lime'){
                                 document.getElementById('sortDateAssignedAsc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateAssigned',true),
                                     desc: this.state.desc.filter(x => x !== "DateAssigned"),
                                 });
                             }
@@ -301,13 +391,11 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortDateAssignedDesc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateAssigned',true),
                                     desc: this.state.desc.filter(x => x !== "DateAssigned"),
                                 });
                         }
                         if(document.getElementById('sortDateAssignedAsc').style.color === 'black' && document.getElementById('sortDateAssignedDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
                                     desc: this.state.desc.filter(x => x !== "DateAssigned"),
                                     asc: this.state.asc.filter(x => x !== "DateAssigned")
                                 });
@@ -319,21 +407,19 @@ class Admin_IC extends React.Component{
                                     {desc: this.state.desc}
                                     ])
                         });
-                            this.printMap();
+                           
                     }}/>  
                     
                     <FaSortAmountDown id= "sortDateAssignedAsc" onClick = {() => {
                         if(document.getElementById('sortDateAssignedAsc').style.color !== 'lime'){
                             document.getElementById('sortDateAssignedAsc').style.color = 'lime';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
                                     desc: this.state.desc.filter(x => x !== "DateAssigned"),
                                     asc: this.state.asc.filter(x => x !== "DateAssigned").concat("DateAssigned")
                                 });                        
                             if(document.getElementById('sortDateAssignedDesc').style.color === 'yellow'){
                                 document.getElementById('sortDateAssignedDesc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
                                     desc: this.state.desc.filter(x => x !== "DateAssigned"),
                                 });
                             }
@@ -341,13 +427,11 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortDateAssignedAsc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
                                     asc: this.state.asc.filter(x => x !== "DateAssigned")
                                 });
                         }
                         if(document.getElementById('sortDateAssignedAsc').style.color === 'black' && document.getElementById('sortDateAssignedDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateAssigned',false),
                                     desc: this.state.desc.filter(x => x !== "DateAssigned"),
                                     asc: this.state.asc.filter(x => x !== "DateAssigned")
                                 });
@@ -359,21 +443,21 @@ class Admin_IC extends React.Component{
                                     {asc: this.state.asc}
                                     ])
                         });
-                        this.printMap();
+                        
                     }}/></th>
 
                     <th className="col">DUE DATE <FaSortAmountUp id = "sortDueDateDesc" onClick = {() => {
                         if(document.getElementById('sortDueDateDesc').style.color !== 'yellow'){
                             document.getElementById('sortDueDateDesc').style.color = 'yellow';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DueDate',true),
+                                    
                                     desc: this.state.desc.filter(x => x !== "DueDate").concat("DueDate"),
                                     asc: this.state.asc.filter(x => x !== "DueDate")
                                 });
                             if(document.getElementById('sortDueDateAsc').style.color === 'lime'){
                                 document.getElementById('sortDueDateAsc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DueDate',true),
+                                   
                                     desc: this.state.desc.filter(x => x !== "DueDate"),
                                 });
                             }
@@ -381,13 +465,13 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortDueDateDesc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DueDate',true),
+                                   
                                     desc: this.state.desc.filter(x => x !== "DueDate"),
                                 });
                         }
                         if(document.getElementById('sortDueDateAsc').style.color === 'black' && document.getElementById('sortDueDateDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    
                                     desc: this.state.desc.filter(x => x !== "DueDate"),
                                     asc: this.state.asc.filter(x => x !== "DueDate")
                                 });
@@ -399,21 +483,21 @@ class Admin_IC extends React.Component{
                                     {desc: this.state.desc}
                                     ])
                         });
-                            this.printMap();
+                           
                     }}/>
                     
                     <FaSortAmountDown id = "sortDueDateAsc" onClick = {() => {
                         if(document.getElementById('sortDueDateAsc').style.color !== 'lime'){
                             document.getElementById('sortDueDateAsc').style.color = 'lime';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                   
                                     desc: this.state.desc.filter(x => x !== "DueDate"),
                                     asc: this.state.asc.filter(x => x !== "DueDate").concat("DueDate")
                                 });                        
                             if(document.getElementById('sortDueDateDesc').style.color === 'yellow'){
                                 document.getElementById('sortDueDateDesc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    
                                     desc: this.state.desc.filter(x => x !== "DueDate"),
                                 });
                             }
@@ -421,13 +505,13 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortDueDateAsc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    
                                     asc: this.state.asc.filter(x => x !== "DueDate")
                                 });
                         }
                         if(document.getElementById('sortDueDateAsc').style.color === 'black' && document.getElementById('sortDueDateDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DueDate',false),
+                                    
                                     desc: this.state.desc.filter(x => x !== "DueDate"),
                                     asc: this.state.asc.filter(x => x !== "DueDate")
                                 });
@@ -439,7 +523,7 @@ class Admin_IC extends React.Component{
                                     {asc: this.state.asc}
                                     ])
                         });
-                        this.printMap();
+                        
                     }}/></th>
 
 
@@ -448,14 +532,14 @@ class Admin_IC extends React.Component{
                         if(document.getElementById('sortDateCompletedDesc').style.color !== 'yellow'){
                             document.getElementById('sortDateCompletedDesc').style.color = 'yellow';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateCompleted',true),
+                                   
                                     desc: this.state.desc.filter(x => x !== "DateCompleted").concat("DateCompleted"),
                                     asc: this.state.asc.filter(x => x !== "DateCompleted")
                                 });
                             if(document.getElementById('sortDateCompletedAsc').style.color === 'lime'){
                                 document.getElementById('sortDateCompletedAsc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateCompleted',true),
+                                    
                                     desc: this.state.desc.filter(x => x !== "DateCompleted"),
                                 });
                             }
@@ -463,13 +547,13 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortDateCompletedDesc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateCompleted',true),
+                                    
                                     desc: this.state.desc.filter(x => x !== "DateCompleted"),
                                 });
                         }
                         if(document.getElementById('sortDateCompletedAsc').style.color === 'black' && document.getElementById('sortDateCompletedDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                    
                                     desc: this.state.desc.filter(x => x !== "DateCompleted"),
                                     asc: this.state.asc.filter(x => x !== "DateCompleted")
                                 });
@@ -481,20 +565,20 @@ class Admin_IC extends React.Component{
                                     {desc: this.state.desc}
                                     ])
                         });
-                            this.printMap();
+                           
                     }}/> 
                     <FaSortAmountDown id = "sortDateCompletedAsc" onClick = {() => {
                         if(document.getElementById('sortDateCompletedAsc').style.color !== 'lime'){
                             document.getElementById('sortDateCompletedAsc').style.color = 'lime';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                   
                                     desc: this.state.desc.filter(x => x !== "DateCompleted"),
                                     asc: this.state.asc.filter(x => x !== "DateCompleted").concat("DateCompleted")
                                 });                        
                             if(document.getElementById('sortDateCompletedDesc').style.color === 'yellow'){
                                 document.getElementById('sortDateCompletedDesc').style.color = 'black';
                                 this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                    
                                     desc: this.state.desc.filter(x => x !== "DateCompleted"),
                                 });
                             }
@@ -502,13 +586,13 @@ class Admin_IC extends React.Component{
                         else{
                             document.getElementById('sortDateCompletedAsc').style.color = 'black';
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                   
                                     asc: this.state.asc.filter(x => x !== "DateCompleted")
                                 });
                         }
                         if(document.getElementById('sortDateCompletedAsc').style.color === 'black' && document.getElementById('sortDateCompletedDesc').style.color === 'black'){
                             this.setState({
-                                    sortParameters: this.state.sortParameters.set('DateCompleted',false),
+                                   
                                     desc: this.state.desc.filter(x => x !== "DateCompleted"),
                                     asc: this.state.asc.filter(x => x !== "DateCompleted")
                                 });
@@ -520,7 +604,7 @@ class Admin_IC extends React.Component{
                                     {asc: this.state.asc}
                                     ])
                         });
-                        this.printMap();
+                        
                     }}/> </th>
                     <th className="col">STATUS/NOTES/COMMENTS</th>
                     {/* <th className="col">SERVICE DESCRIPTION</th> */}
@@ -669,6 +753,8 @@ class Admin_IC extends React.Component{
                 )}
             </tbody>
             </table>
+            <br/><br/>
+            
            </Container>
             </div>
         )

@@ -84,20 +84,18 @@ export default{
         return axios.get("/api/tasklist")
     },
     filterTasks: function(quotationIssuedBy,quoteApproved,completed){
-        // url_string = `/api/tasklist/sortBy?`
-        // url_string1 = `/api/tasklist/sortBy?`
-        // url_string2 = `/api/tasklist/sortBy?`
-        // url_string3 = `/api/tasklist/sortBy?`
-        // if(quotationIssuedBy !== undefined){
-        //     url_string1 = `quotationIssuedBy=${quotationIssuedBy}`
-        // }
-        // if(quoteApproved !== undefined){
-        //     url_string2 = `quoteApproved=${quoteApproved}`
-        // }
-        // if(completed !== undefined){
-        //     url_string3
-        // }
-        return axios.get(`/api/tasklist/sortBy?quotationIssuedBy=${quotationIssuedBy}&quoteApproved=${quoteApproved}&completed=${completed}`)
+        const searchParams = new URLSearchParams();
+        if(quotationIssuedBy !== undefined){
+            searchParams.append("quotationIssuedBy", quotationIssuedBy);
+        }
+        if(quoteApproved !== undefined){
+            searchParams.append("quoteApproved", quoteApproved);
+        }
+        if(completed !== undefined){
+            searchParams.append("completed", completed);
+        }
+        console.log(searchParams.toString());
+        return axios.get(`/api/tasklist/sortBy?` + searchParams.toString())
     }
 }
 
