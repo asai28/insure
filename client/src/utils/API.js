@@ -96,6 +96,9 @@ export default{
         }
         console.log(searchParams.toString());
         return axios.get(`/api/tasklist/sortBy?` + searchParams.toString())
+    },
+    deleteTask: function(id){
+        return axios.delete(`/api/tasklist/` + id)
     }
 }
 

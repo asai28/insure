@@ -57,6 +57,14 @@ class Admin_IC extends React.Component{
     }
 
     componentWillMount = () => {
+        API.allTasks()
+        .then(res => {
+            this.setState({
+                tasks: res.data
+            });
+            console.log(res.data);
+        })
+        .catch(err => console.log(err));
         API.getCompany()
       .then(res => {
           var uniqueCompanies = [];
@@ -70,13 +78,6 @@ class Admin_IC extends React.Component{
       })
       .catch(err => console.log(err));
 
-        API.allTasks()
-        .then(res => {
-            this.setState({
-                tasks: res.data
-            })
-        })
-        .catch(err => console.log(err));
 
         API.getEmployees()
         .then(res => {
@@ -614,10 +615,11 @@ class Admin_IC extends React.Component{
                     {/* <th className="col">SERVICE DESCRIPTION</th> */}
                     <th className="col">QUOTE APPROVED</th>
                     <th className="col">COMPLETED</th>
+                    <th className="col">REMOVE TASK</th>
                 </tr>
             </thead>
             <tbody>
-                {this.state.tasks.filter(x => isNullOrUndefined(x.quotationIssuedBy)).map((x, index) => 
+                {this.state.tasks.filter(x => !isNullOrUndefined(x.quotationIssuedBy)).map((x, index) => 
                 <tr key={"activeList"+index} className="table-row">
                     <td key={"activeList"+index+"_quotationNumber"}>{!isNullOrUndefined(x.quotationIssuedBy) ? "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023) : "QN_EMPTY_" + (x.id + 1023)}</td>
                     <td key={"activeList"+index+"_service"}>{x.service}</td>
@@ -753,6 +755,12 @@ class Admin_IC extends React.Component{
                         </FormGroup>
                     </FormGroup>
                     </td>
+                    <td key={"activeList"+index+"_removeTask"}><Button className = 'btn-danger' onClick = {() => {
+                        console.log(x)
+                        API.deleteTask(x.id)
+                        .then(() => console.log(x.id ,"deleted"))
+                        .catch(err => console.log(err));
+                    }}>Remove Task</Button></td>
                 </tr>
                 )}
             </tbody>

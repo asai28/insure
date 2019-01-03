@@ -112,6 +112,23 @@ module.exports = function(app) {
       res.json(task);
     });
 });
+
+app.delete("/api/tasklist/:id", function(req,res){
+    db.TaskList.destroy(
+        {
+        where: {
+            id: req.params.id
+        }
+        // },
+        // truncate: true
+    }).on('success', function() { console.log("Deleted sucessfully") })
+    .then(function(service){
+        console.log("heyoo");
+        console.log(req.query.id);
+        console.log(service)
+        res.json(service)
+    });
+});
 }
 
 
