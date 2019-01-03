@@ -25,7 +25,8 @@ class Admin_IC extends React.Component{
             dateAssigned: moment(),
             dueDate: moment()
             .add(90, "days")
-            .format("YYYY-MM-DD")
+            .format("YYYY-MM-DD"),
+            qty: 0
         };
         
         this.getTasks = this.getTasks.bind(this);
@@ -160,7 +161,7 @@ class Admin_IC extends React.Component{
             <Label>
                 ADD OR REMOVE TASK FOR EMPLOYEE
             </Label>
-            <FormGroup id="addTask">
+            <Form id="addTask">
                 <Input type="select" name="toEmployee" id="employee" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}>
                 <option value="">Employee assigned task</option>
                     {this.state.employees.map(x => <option value={x.EMP_NAME}>{x.EMP_NAME}</option>)}
@@ -194,6 +195,7 @@ class Admin_IC extends React.Component{
                 name="dueDate"
                 id="dueDate"
                 onChange={this.handleInputChange}
+                value = {moment(this.state.dateAssigned).add(90, "days").format("YYYY-MM-DD")}
                 placeholder = "Enter due date"
                 style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
             />
@@ -203,25 +205,27 @@ class Admin_IC extends React.Component{
                 id="qty"
                 onChange={this.handleInputChange}
                 placeholder = "Enter qty of task if applicable"
-                defaultValue = {this.state.qty}
                 style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
             />
                 <Button onClick = {() => {
                     var item = {
                         quotationIssuedBy: this.state.toEmployee,
-                        quotationNumber: "NULL",
-        service: this.state.task,
-        client: this.state.client,
-        instructions: this.state.details,
-        startDate: this.state.dateAssigned, //sort
-        validThru: this.state.dueDate,
-        qty: this.state.qty,
+                        quotationNumber: "EMPTY",
+                        service: this.state.task,
+                        client: this.state.client,
+                        instructions: this.state.details,
+                        startDate: this.state.dateAssigned, //sort
+                        validThru: this.state.dueDate,
+                        qty: parseFloat(this.state.qty)
                     };
                     API.addTask(item)
-                    .then(() => console.log("Task added!"))
+                    .then(() => {
+                        console.log("Task added!");
+                        document.getElementById('addTask').reset();
+                        })
                     .catch(err => console.log(err));
                 }}>Submit</Button>
-            </FormGroup>  
+            </Form>  
             </Jumbotron>
 
             <Container>
@@ -613,9 +617,9 @@ class Admin_IC extends React.Component{
                 </tr>
             </thead>
             <tbody>
-                {this.state.tasks.map((x, index) => 
+                {this.state.tasks.filter(x => isNullOrUndefined(x.quotationIssuedBy)).map((x, index) => 
                 <tr key={"activeList"+index} className="table-row">
-                    <td key={"activeList"+index+"_quotationNumber"}>{"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023)}</td>
+                    <td key={"activeList"+index+"_quotationNumber"}>{!isNullOrUndefined(x.quotationIssuedBy) ? "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023) : "QN_EMPTY_" + (x.id + 1023)}</td>
                     <td key={"activeList"+index+"_service"}>{x.service}</td>
                     <td key={"activeList"+index+"_client"}>{x.client}</td>
                     <td key={"activeList"+index+"_dateAssigned"}>{moment(x.dateAssigned).format("YYYY-MM-DD")}</td>

@@ -102,7 +102,7 @@ module.exports = function(app) {
         details: req.body.instructions,
         dateAssigned: req.body.startDate, //sort
         dueDate: req.body.validThru,
-        serviceUnits: req.body.qty,
+        qty: req.body.qty,
         dateCompleted: req.body.dateCompleted,
         status_notes_comments: req.body.comments,
         serviceDescription: req.body.serviceDescription,

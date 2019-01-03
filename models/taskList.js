@@ -19,7 +19,8 @@ module.exports = function(sequelize, DataTypes) {
         dateAssigned: DataTypes.DATE, //sort
         dueDate: DataTypes.DATE,
         qty: {
-            type: DataTypes.FLOAT(10,2),
+            type: DataTypes.FLOAT,
+            defaultValue: 0.00
         },
         dateCompleted: {//sort
             type: DataTypes.DATE
