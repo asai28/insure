@@ -99,6 +99,9 @@ export default{
     },
     deleteTask: function(id){
         return axios.delete(`/api/tasklist/` + id)
+    },
+    modifyEntireTask: function(id, item){
+        return axios.put("/api/tasklist/" + id, item)
     }
 }
 

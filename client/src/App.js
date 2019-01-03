@@ -6,6 +6,7 @@ import TaskList from "./Pages/TaskList/TaskList";
 import Admin_IC from "./Pages/Admin_IC/Admin";
 import {Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, NavLink, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem} from "reactstrap";
 import routes from "./constants/routes";
+import Admin_ICABOB from "./Pages/Admin_ICABOB/Admin_ICABOB";
 // import firebase from './firebase.js';
 
 // import Login from "./Pages/Login/Login";
@@ -52,9 +53,11 @@ class App extends React.Component{
                     <NavLink href="/adminIC">Admin_IC</NavLink>
                   </NavItem>
                   </DropdownItem>
-                  <DropdownItem>Option 2</DropdownItem>
-                  <DropdownItem divider />
-                  <DropdownItem>Reset</DropdownItem>
+                  <DropdownItem>
+                  <NavItem>
+                    <NavLink href="/adminICABOB">Admin_ICABOB</NavLink>
+                  </NavItem>
+                  </DropdownItem>
                 </DropdownMenu>
               </UncontrolledDropdown>
             </Nav>
@@ -67,6 +70,7 @@ class App extends React.Component{
         <Route exact={true} path={routes.REGISTER} component={RegisterPage} /> */}
         <Route exact={true} path={routes.TASK_LIST} component={TaskList} />
         <Route exact={true} path={routes.ADMIN_IC} component = {Admin_IC}/>
+        <Route exact={true} path={routes.ADMIN_ICABOB} component= {Admin_ICABOB} />
         </Switch>
         </Router>
     </div>

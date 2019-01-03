@@ -93,6 +93,31 @@ module.exports = function(app) {
         });
    });
 
+   //Update entire task
+   app.put("/api/tasklist/:id", function(req,res){
+    db.TaskList.update(
+        {
+            service: req.body.service,
+            client: req.body.client,
+            dateAssigned: req.body.dateAssigned, 
+            dueDate: req.body.dueDate,
+            qty: req.body.qty,
+            quoteApproved: req.body.quoteApproved,
+            dateCompleted: req.body.dateCompleted,
+            details: req.body.details,
+            completed: req.body.completed
+        },
+        {where: {
+            id: req.params.id
+        }
+    }).then(function(service){
+        console.log("heyoo");
+        console.log(req.query.id);
+        console.log(service)
+        res.json(service)
+    });
+});
+
    app.post("/api/taskList", function(req, res){
     db.TaskList.create({
         quotationIssuedBy: req.body.quotationIssuedBy,

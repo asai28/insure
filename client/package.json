@@ -23,6 +23,8 @@
     "page-wrapping": "^1.0.2",
     "react": "^16.6.3",
     "react-addons": "^0.9.1-deprecated",
+    "react-alert": "^4.0.4",
+    "react-alert-template-basic": "^1.0.0",
     "react-axios": "^2.0.1",
     "react-bootstrap-typeahead": "^3.2.3",
     "react-calendar": "^2.17.3",
@@ -40,8 +42,7 @@
     "react-table": "^6.8.6",
     "react-validation": "^3.0.7",
     "reactstrap": "^6.4.0",
-    "recompose": "^0.30.0",
-    "sort-by": "^1.2.0"
+    "recompose": "^0.30.0"
   },
   "scripts": {
     "predeploy": "npm run build",

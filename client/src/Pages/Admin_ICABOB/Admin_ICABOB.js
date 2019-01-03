@@ -23,7 +23,7 @@ const options = {
 //array sort function
 var fastSort = require("fast-sort");
 
-class Admin_IC extends React.Component{
+class Admin_ICABOB extends React.Component{
     constructor(props){
         super(props);
         this.state = {
@@ -186,7 +186,22 @@ class Admin_IC extends React.Component{
                 <option value="">Employee assigned task</option>
                     {this.state.employees.map(x => <option value={x.EMP_NAME}>{x.EMP_NAME}</option>)}
                 </Input>
-                <Input type="text" name="task" id="task" placeholder="Enter task here" onChange = {this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}/>
+                
+                <Input type="select" name="task" id="task" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}>
+                <option value="">Choose a task category</option>
+                <option value="Admin Task">Admin Task</option>
+                <option value="Management Task">Management Task</option>
+                <option value="IC Employee Training">IC Employee Training</option>
+                <option value="Marketing Task">Marketing Task</option>
+                <option value="Miscellanous">Miscellanous</option>
+                <option value="Networking Task">Networking Task</option>
+                <option value="Sales Task">Sales Task</option>
+                <option value="Research Task">Research Task</option>
+                <option value="Scheduling Task">Scheduling Task</option>
+                </Input>
+
+
+                {/* <Input type="text" name="task" id="task" placeholder="Enter task here" onChange = {this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}/> */}
                 <Input type="select" name="client" id="client" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}>
                 <option value="">Choose Client</option>
                     {this.state.companyNames.map(x => <option value={x}>{x}</option>)}
@@ -219,14 +234,7 @@ class Admin_IC extends React.Component{
                 placeholder = "Enter due date"
                 style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
             />
-                <Input
-                type="text"
-                name="qty"
-                id="qty"
-                onChange={this.handleInputChange}
-                placeholder = "Enter qty of task if applicable"
-                style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
-            />
+                
                 <Button onClick = {() => {
                     var item = {
                         quotationIssuedBy: this.state.toEmployee,
@@ -630,64 +638,109 @@ class Admin_IC extends React.Component{
                         });
                         
                     }}/> </th>
-                    <th className="col">STATUS/NOTES/COMMENTS</th>
+                    <th className="col">DETAILS</th>
                     {/* <th className="col">SERVICE DESCRIPTION</th> */}
                     <th className="col">QUOTE APPROVED</th>
                     <th className="col">COMPLETED</th>
+                    <th className="col">UPDATE TASK</th>
                     <th className="col">REMOVE TASK</th>
                 </tr>
             </thead>
             <tbody>
-                {this.state.tasks.filter(x => !isNullOrUndefined(x.quotationIssuedBy)).map((x, index) => 
-                <tr key={"activeList"+index} className="table-row">
-                    <td key={"activeList"+index+"_quotationNumber"}>{!isNullOrUndefined(x.quotationIssuedBy) ? "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023) : "QN_EMPTY_" + (x.id + 1023)}</td>
-                    <td key={"activeList"+index+"_service"}>{x.service}</td>
-                    <td key={"activeList"+index+"_client"}>{x.client}</td>
-                    <td key={"activeList"+index+"_dateAssigned"}>{moment(x.dateAssigned).format("YYYY-MM-DD")}</td>
-                    <td key={"activeList"+index+"_dueTime"}>{moment(x.dueDate).format("YYYY-MM-DD")}</td>
-                    <td key={"activeList"+index+"_serviceUnits"}>{x.qty}</td>
-                    <td key={"activeList"+index+"_dateOfCompletion"}>
+                {this.state.tasks.filter(x => !isNullOrUndefined(x.quotationIssuedBy)).map((x) => 
+                <tr key={"activeList"+x.id} className="table-row">
+                    <td key={"activeList"+x.id+"_quotationNumber"}>{!isNullOrUndefined(x.quotationIssuedBy) ? "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023) : "QN_EMPTY_" + (x.id + 1023)}</td>
+                    <td key={"activeList"+x.id+"_service"}>
                     <Input
                           type="text"
-                          name={"activeList"+ index + "_dateCompleted"}
-                          id={"activeList"+ index + "_dateCompleted"}
+                          name={"activeList"+x.id+"_service"}
+                          id={"activeList"+x.id+"_service"}
+                          defaultValue={x.service}
+                          placeholder="Enter name of service"
+                          onChange={this.handleInputChange}
+                        />
+                    </td>
+                    <td key={"activeList"+x.id+"_client"}>
+                    <Input
+                          type="text"
+                          name={"activeList"+x.id+"_client"}
+                          id={"activeList"+x.id+"_client"}
+                          defaultValue={x.client}
+                          placeholder="Enter client"
+                          onChange={this.handleInputChange}
+                        />
+                    </td>
+                    <td key={"activeList"+x.id+"_dateAssigned"}>
+                    <Input
+                          type="text"
+                          name={"activeList"+x.id+"_dateAssigned"}
+                          id={"activeList"+x.id+"_dateAssigned"}
+                          defaultValue={moment(x.dateAssigned).format("YYYY-MM-DD")}
+                          placeholder="Enter date assigned"
+                          onChange={this.handleInputChange}
+                        />
+                    </td>
+                    <td key={"activeList"+x.id+"_dueTime"}>
+                    <Input
+                          type="text"
+                          name={"activeList"+x.id+"_dueTime"}
+                          id={"activeList"+x.id+"_dueTime"}
+                          defaultValue={moment(x.dueDate).format("YYYY-MM-DD")}
+                          placeholder="Enter due date"
+                          onChange={this.handleInputChange}
+                        />
+                    </td>
+                    <td key={"activeList"+x.id+"_serviceUnits"}>
+                    <Input
+                          type="text"
+                          name={"activeList"+x.id+"_serviceUnits"}
+                          id={"activeList"+x.id+"_serviceUnits"}
+                          defaultValue={x.qty}
+                          placeholder="Enter service units"
+                          onChange={this.handleInputChange}
+                        />
+                    </td>
+                    <td key={"activeList"+x.id+"_dateOfCompletion"}>
+                    <Input
+                          type="text"
+                          name={"activeList"+ x.id + "_dateCompleted"}
+                          id={"activeList"+ x.id + "_dateCompleted"}
                           defaultValue={moment(x.dateCompleted).format("YYYY-MM-DD")}
                           placeholder="Enter date of completion"
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    <td key={"activeList"+ index +"_status_notes_comments"}>
+                    <td key={"activeList"+ x.id +"_details"}>
                     <Input
                           type="textarea"
-                          name={"activeList"+ index + "_status_notes_comments"}
-                          id={"activeList"+ index + "_status_notes_comments"}
-                          defaultValue={x.status_notes_comments}
+                          name={"activeList"+ x.id + "_details"}
+                          id={"activeList"+ x.id + "_details"}
+                          defaultValue={x.details}
                           placeholder="Enter status/notes/comments"
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    {/* <td key={"activeList" + index + "serviceDescription"}>
+                    {/* <td key={"activeList" + x.id + "serviceDescription"}>
                      <span style = {{'fontSize': '10px'}}>{x.serviceDescription}</span>
 
                     </td> */}
-                    <td key={"activeList"+index+"_quoteApproved"}>
+                    <td key={"activeList"+x.id+"_quoteApproved"}>
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={true}  onChange = {this.handleInputChange} checked = {x.quoteApproved} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_quoteApproved"} id={"activeList"+x.id+"_quoteApproved"} value={true} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
-                                    // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
-                                    // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
-                                    dateCompleted: moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    // dateCompleted: document.getElementById("activeList"+x.id+ "_dateCompleted").value,
+                                    // details: document.getElementById("activeList"+ x.id + "_details")
                                     quoteApproved: true,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    details: document.getElementById("activeList"+ x.id + "_details").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(res => {
                                     console.log("Quote approved");
                                     console.log(res.data);
-                                    API.getEmployeeTasks(this.state.employee.split(" ").join("%20"))
+                                    API.allTasks()
                                     .then(res2 => {
                                         console.log(res2.data);
                                         this.setState({
@@ -712,37 +765,47 @@ class Admin_IC extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={false}  onChange = {this.handleInputChange} checked = {!x.quoteApproved} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_quoteApproved"} id={"activeList"+x.id+"_quoteApproved"} value={false} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
-                                    // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
                                     quoteApproved: false,
-                                    // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
-                                }
+                                    // details: document.getElementById("activeList"+ x.id + "_details")
+                                    // dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    details: document.getElementById("activeList"+ x.id + "_details").value
+                                };
                                 API.modifyTask(x.id, item)
-                                .then(() => console.log("Quote not approved"))
-                                .catch(err => console.log(err))
-                            }}/>{' '}
+                                .then(() => {
+                                    console.log("Quote not approved");
+                                    API.allTasks()
+                                    .then(res2 => {
+                                        console.log(res2.data);
+                                        this.setState({
+                                            tasks: res2.data
+                                        });
+                                    })
+                                    .catch(err => console.log(err));
+                                })
+                                .catch(err => console.log(err));
+
+                            }} /> {''}
                             No
                             </Label>
                         </FormGroup>
                     </FormGroup>
                     </td>
-                    <td key={"activeList"+index+"_completed"}>
+                    <td key={"activeList"+x.id+"_completed"}>
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} checked={x.completed} value={true} onChange = {this.handleInputChange} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_completed"} id={"activeList"+x.id+"_completed"} value={true} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
-                                console.log(document.getElementById("activeList"+index+ "_dateCompleted").value, document.getElementById("activeList"+ index + "_status_notes_comments").value);
+                                console.log(document.getElementById("activeList"+x.id+ "_dateCompleted").value, document.getElementById("activeList"+ x.id + "_details").value);
                                 console.log(!isNullOrUndefined(x.quoteApproved))
                                 var item = {
                                     completed: true,
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    // dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    details: document.getElementById("activeList"+ x.id + "_details").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => {console.log("Task completed");
@@ -755,15 +818,14 @@ class Admin_IC extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} checked={!x.completed} value={false} onChange = {this.handleInputChange} disabled ={
-                                isNullOrUndefined(x.quoteApproved)
-                                } onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_completed"} id={"activeList"+x.id+"_completed"} checked={!x.completed} value={false} onChange = {this.handleInputChange} onClick = {() => {
                              console.log(x.id);
                                 var item = {
+                                  
                                     completed: false,
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    // dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    details: document.getElementById("activeList"+ x.id + "_details").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Task incomplete"))
@@ -774,7 +836,26 @@ class Admin_IC extends React.Component{
                         </FormGroup>
                     </FormGroup>
                     </td>
-                    <td key={"activeList"+index+"_removeTask"}>
+                    <td key={"activeList"+x.id+"_updateTask"}>
+                    
+                    <Button className = 'btn-success' onClick = {() => {
+                        console.log(x.id);
+                                var item = {
+                                    service: document.getElementById("activeList"+x.id+"_service").value,
+            client: document.getElementById("activeList"+x.id+"_client").value, 
+            dateAssigned: document.getElementById("activeList"+x.id+"_dateAssigned").value,  
+            dueDate: document.getElementById("activeList"+x.id+"_dueTime").value, 
+            qty: document.getElementById("activeList"+x.id+"_serviceUnits").value, 
+            quoteApproved: document.getElementById("activeList"+x.id+"_quoteApproved").value, 
+            dateCompleted: document.getElementById("activeList"+ x.id + "_dateCompleted").value, 
+            details: document.getElementById("activeList"+ x.id + "_details").value, 
+            completed: document.getElementById("activeList"+x.id+"_completed").value, 
+                                }
+                                API.modifyEntireTask(x.id, item)
+                                .then(() => console.log("Task updated"))
+                                .catch(err => console.log(err))   
+                    }}> Update Task</Button></td>
+                    <td key={"activeList"+x.id+"_removeTask"}>
                     
                     <Button className = 'btn-danger' onClick = {() => {
                         console.log(x);
@@ -798,4 +879,4 @@ class Admin_IC extends React.Component{
 
 }
 
-export default Admin_IC;
+export default Admin_ICABOB;
