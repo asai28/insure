@@ -1274,7 +1274,7 @@ export default class Example extends React.Component {
               )}
             </FormGroup>
             <FormGroup>
-              <Label for="dateOfRequest">Date of Request</Label>
+              <Label for="dateOfRequest">Date of Request</Label><br />
               <DatePicker
                 selected={this.state.startDate}
                 onChange={this.handleChange}
@@ -1547,7 +1547,7 @@ export default class Example extends React.Component {
                         />
                       </FormGroup>
                       <Button color="secondary" onClick={this.addService}>
-                        Enter another service
+                        Add this service
                       </Button>
                     </Form>
                   </ModalBody>
