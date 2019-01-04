@@ -26,8 +26,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node server.js",
-    "heroku-postbuild": "cd client && yarn deploy"
+    "prestart": "cd client && yarn build",
+    "install": "cd client && yarn",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
