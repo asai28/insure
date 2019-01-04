@@ -14,6 +14,9 @@ import {Popover, PopoverHeader, PopoverBody} from "reactstrap";
 //Importing CSS for body, logo and table of the pdf generator
 import "./style.css";
 
+//Utils for checking null or undefined field
+import { isNullOrUndefined } from "util";
+
 /*Imports required for React Calendar */
 import DatePicker from "react-datepicker";
 import moment from "moment";
@@ -250,12 +253,12 @@ export default class Example extends React.Component {
   }
   
   componentDidMount = () => {
-    this.getEmployees();
-    this.getCompanies();
     document.getElementById('addEquipment').style.display = "none";
   };
-
+  
   componentWillMount = () => {
+    this.getEmployees();
+    this.getCompanies();
     API.getTopicBasedEquipments()
       .then(res => {
         this.setState({
@@ -288,19 +291,19 @@ export default class Example extends React.Component {
       this.setState({
       billableService: true,
       durationInMin: parseInt(result.DurationInMin),
-      numServiceUnits: parseFloat(this.state.numServiceUnits),
+      numServiceUnits: parseFloat(result.serviceUnits),
       costForService: parseFloat(result.costOfService),
-        service: "Training - " + this.state.topic,
-        Laptop: this.state.Laptop || result.Laptop,
-        projectorScreen: this.state.projectorScreen || result.projectorScreen,
-        Table: this.state.Table || result.Table,
-        trainingKit: this.state.trainingKit || result.trainingKit,
-        forkliftTrainingKit: this.state.forkliftTrainingKit || result.forkliftTrainingKit,
-        CPRmannequins: this.state.CPRmannequins || result.CPRmannequins,
-        firstAidAEDKit: this.state.firstAidAEDKit || result.firstAidAEDKit,
-        RespiratorFitTestKit: this.state.RespiratorFitTestKit || result.RespiratorFitTestKit,
-        Handouts: this.state.Handouts || result.Handouts,
-        costForService: result.costOfService
+      service: "Training - " + this.state.topic,
+      Laptop: this.state.Laptop || result.Laptop,
+      projectorScreen: this.state.projectorScreen || result.projectorScreen,
+      Table: this.state.Table || result.Table,
+      trainingKit: this.state.trainingKit || result.trainingKit,
+      forkliftTrainingKit: this.state.forkliftTrainingKit || result.forkliftTrainingKit,
+      CPRmannequins: this.state.CPRmannequins || result.CPRmannequins,
+      firstAidAEDKit: this.state.firstAidAEDKit || result.firstAidAEDKit,
+      RespiratorFitTestKit: this.state.RespiratorFitTestKit || result.RespiratorFitTestKit,
+      Handouts: this.state.Handouts || result.Handouts,
+      costForService: result.costOfService
       });
     }
 
@@ -383,7 +386,7 @@ export default class Example extends React.Component {
       billable: this.state.billableService,
       costForService: this.state.costForService,
       durationInMin: this.state.durationInMin,
-      qty: (this.state.numServiceUnits !== undefined) ? parseFloat(this.state.numServiceUnits): 1,
+      qty: (isNullOrUndefined(this.state.numServiceUnits)) ? parseFloat(this.state.numServiceUnits): 1,
       alternateName: this.state.alternateName.length === 0 ? this.state.service : this.state.alternateName,
       cost: parseFloat(this.state.costForService),
       serviceDescription: this.state.description
@@ -409,9 +412,9 @@ export default class Example extends React.Component {
         this.setState({
           requestedServices : res.data
         })
-        this.setState({
-          requestedServiceRows: this.getServices()
-        });
+        // this.setState({
+        //   requestedServiceRows: this.getServices()
+        // });
       })
       .catch(err => console.log(err));
       })
@@ -424,15 +427,15 @@ export default class Example extends React.Component {
   saveServices = () => {
     API.getServiceRequests()
       .then(res => {
-        if (this.state.service.trim() !== "") {
-          this.addService();
-        }
+        // if (this.state.service.trim() !== "") {
+        //   this.addService();
+        // }
         this.setState({
           requestedServices : res.data
         })
-        this.setState({
-          requestedServiceRows: this.getServices()
-        });
+        // this.setState({
+        //   requestedServiceRows: this.getServices()
+        // });
       })
       .catch(err => console.log(err));
     this.toggleServiceModal();
@@ -457,9 +460,9 @@ export default class Example extends React.Component {
                 this.setState({
                   requestedServices : res.data
                 })
-                this.setState({
-                  requestedServiceRows: this.getServices()
-                });
+                // this.setState({
+                //   requestedServiceRows: this.getServices()
+                // });
               console.log("Deleted");
               })
               .catch(err => console.log(err));
@@ -709,9 +712,9 @@ export default class Example extends React.Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    this.setState({
-      requestedServiceRows: this.getServices()
-    });
+    // this.setState({
+    //   requestedServiceRows: this.getServices()
+    // });
 
     var item = {
       companyName: this.state.companyName,
@@ -1522,7 +1525,6 @@ export default class Example extends React.Component {
                           type="text"
                           name="durationInMin"
                           id="durationInMin"
-                          value = {this.state.durationInMin}
                           placeholder="Enter duration of service in minutes"
                           onChange={this.handleInputChange}
                         />
@@ -1535,7 +1537,6 @@ export default class Example extends React.Component {
                           type="text"
                           name="numServiceUnits"
                           id="numServiceUnits"
-                          value = {this.state.numServiceUnits}
                           placeholder="Enter number of service units"
                           onChange={this.handleInputChange}
                         />
@@ -2011,9 +2012,37 @@ export default class Example extends React.Component {
                     <th>DELETE</th>
                   </tr>
                   <tbody>
-                    {this.state.requestedServices.length > 0
-                      ? this.state.requestedServiceRows
-                      : ""}
+                    {this.state.requestedServices.map((x, index) => 
+                      <tr key={"serviceRequest" + (index + 1)} id = {x.id}>
+                        <td>{x.alternateName}</td>
+                        <td>{x.qty}</td>
+                        <td>{x.cost.toFixed(2)}</td>
+                        <td>${(x.qty * x.cost).toFixed(2)}</td>
+                        <td><FaMinusCircle style = {{'color': '#cc3300'}} onClick = {() => {
+                          document.getElementById(x.id).style.display = 'none';
+                          document.getElementById("serviceRequest" + x.id).style.display = 'none';
+                          API.removeService(x.id)
+                          .then(() => {
+                            console.log(x.id);
+                            console.log("Deleted");
+                            API.getServiceRequests()
+                            .then(res => {
+                            var sum = 0;
+                              for(let i = 0; i < res.data.length; ++i){
+                                if(res.data[i].billable){
+                                sum += res.data[i].qty * res.data[i].cost
+                                }
+                              }
+                            this.setState({
+                              totalCost: sum
+                            });
+                            })
+                            .catch(err => console.log(err));
+                          })
+                          .catch(err => console.log(err));
+                          }}/></td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
             </FormGroup>
@@ -2116,9 +2145,14 @@ export default class Example extends React.Component {
                     <th>AMOUNT</th>
                   </tr>
                   <tbody>
-                    {this.state.requestedServices.length > 0
-                      ? this.state.requestedServiceRows
-                      : ""}
+                    {this.state.requestedServices.map((x, index) => 
+                      <tr key={"serviceRequest" + (index + 1)} id = {"serviceRequest" + x.id}>
+                        <td>{x.alternateName}</td>
+                        <td>{x.qty}</td>
+                        <td>{x.cost.toFixed(2)}</td>
+                        <td>${(x.qty * x.cost).toFixed(2)}</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
 

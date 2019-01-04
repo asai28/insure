@@ -74,6 +74,39 @@ module.exports = function(app) {
      });
 });
 
+app.get("/api/tasklist/:emp/incomplete", function(req, res){
+    console.log(db.Sequelize.options);
+     db.TaskList.findAll({
+         where: {
+             quotationIssuedBy: req.params.emp,  
+             completed: false
+         }
+     })
+     .then(function(service){
+         console.log("heyoo");
+         console.log(req.params.emp);
+         console.log(service)
+         res.json(service)
+     });
+});
+
+app.get("/api/tasklist/:emp/incompleteNull", function(req, res){
+    console.log(db.Sequelize.options);
+     db.TaskList.findAll({
+         where: {
+             quotationIssuedBy: req.params.emp,  
+             completed: null
+         }
+     })
+     .then(function(service){
+         console.log("heyoo");
+         console.log(req.params.emp);
+         console.log(service)
+         res.json(service)
+     });
+});
+
+
    app.put("/api/tasklist/:id", function(req,res){
         db.TaskList.update(
             {

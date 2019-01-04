@@ -102,6 +102,12 @@ export default{
     },
     modifyEntireTask: function(id, item){
         return axios.put("/api/tasklist/" + id, item)
+    },
+    incompleteTasks: function(emp) {
+        return axios.get("/api/tasklist/" + emp + "/incomplete")
+    },
+    incompleteNullTasks: function(emp) {
+        return axios.get("/api/tasklist/" + emp + "/incompleteNull")
     }
 }
 

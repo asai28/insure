@@ -202,14 +202,18 @@ app.delete("/api/requestedServices", function(req, res){
     });
 });
 
-app.delete("/api/requestedServices/:id", function(req, res){
-    db.ServiceRequests.destroy({
+app.delete("/api/requestedServices/:id", function(req,res){
+    db.ServiceRequests.destroy(
+        {
         where: {
             id: req.params.id
         }
     }).on('success', function() { console.log("Deleted sucessfully") })
-    .then(function(result){
-        res.json(result);
+    .then(function(service){
+        console.log("heyoo");
+        console.log(req.query.id);
+        console.log(service)
+        res.json(service)
     });
 });
 

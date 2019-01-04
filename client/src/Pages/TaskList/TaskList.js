@@ -65,6 +65,15 @@ class TaskList extends React.Component{
                     tasks: res.data
                 });
                 this.getCompletedTasks();
+
+                API.incompleteTasks(this.state.employee.split(" ").join("%20"))
+                .then(res2 => console.log(res2.data))
+                .catch(err => console.log(err));
+
+                API.incompleteNullTasks(this.state.employee.split(" ").join("%20"))
+                .then(res2 => console.log(res2.data))
+                .catch(err => console.log(err));
+
             })
             .catch(err => console.log(err));
         }
@@ -616,17 +625,122 @@ class TaskList extends React.Component{
                                 console.log(x.id);
                                 console.log(document.getElementById("activeList"+index+ "_dateCompleted").value, document.getElementById("activeList"+ index + "_status_notes_comments").value);
                                 console.log(!isNullOrUndefined(x.quoteApproved))
-                                var item = {
+                                API.modifyTask(x.id, {
                                     completed: true,
                                     dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
                                     status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
-                                }
-                                API.modifyTask(x.id, item)
-                                .then(() => {console.log("Task completed");
-                                this.getCompletedTasks();
                                 })
-                                .catch(err => console.log(err))
+                                .then(() => {
+                                        console.log("Task completed");
+
+                                    if(x.service.includes("Training")){
+                                        API.addTask({
+                                            quotationIssuedBy: "Jared",
+                                            quotationNumber: "EMPTY",
+                                            service: `Schedule a trainer`,
+                                            client: `${x.client}`,
+                                            instructions: `Create a task for trainer/ service provider manually`,
+                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD")}`,
+                                            validThru: `${moment(x.dateAssigned).add("days",3).format("YYYY-MM-DD")}`
+                                        })
+                                        .then(() => {
+                                            console.log("Jared schedules a trainer!");
+                                        })
+                                        .catch(err => console.log(err));
+
+
+                                        API.addTask({
+                                            quotationIssuedBy: "Jared",
+                                            quotationNumber: "EMPTY",
+                                            service: `Get paperwork ready for ${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)}`,
+                                            client: `${x.client}`,
+                                            instructions: ``,
+                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD")}`,
+                                            validThru: `${moment(x.dateAssigned).add("days",3).format("YYYY-MM-DD")}`
+                                        })
+                                        .then(() => {
+                                            console.log("Jared gets paperwork ready!");
+                                        })
+                                        .catch(err => console.log(err));
+                                        
+                                        API.addTask({
+                                            quotationIssuedBy: "Morgan",
+                                            quotationNumber: "EMPTY",
+                                            service: `Training`,
+                                            client: `${x.client}`,
+                                            instructions: `Provide training for ${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)}`,
+                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD")}`,
+                                            validThru: `${moment(x.dateAssigned).add("days",30).format("YYYY-MM-DD")}`
+                                        })
+                                        .then(() => {
+                                            console.log("Jared schedules a trainer!");
+                                        })
+                                        .catch(err => console.log(err));
+
+                                        API.addTask({
+                                            quotationIssuedBy: "Jared",
+                                            quotationNumber: "EMPTY",
+                                            service: `${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)} Paperwork- part 1`,
+                                            client: `${x.client}`,
+                                            instructions: `Recieve, scan file, sign-in sheet and update training tracker`,
+                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD").add("days",30).format("YYYY-MM-DD")}`,
+                                            validThru: `${moment(x.dateAssigned).add("days",6).format("YYYY-MM-DD")}`
+                                        })
+                                        .then(() => {
+                                            console.log("Jared paperwork -1 !");
+                                        })
+                                        .catch(err => console.log(err));
+
+                                        
+
+                                        API.addTask({
+                                            quotationIssuedBy: "Jared",
+                                            quotationNumber: "EMPTY",
+                                            service: `${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)} Paperwork- part 2`,
+                                            client: `${x.client}`,
+                                            instructions: `Verify names of class participants with client`,
+                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD").add("days",3).format("YYYY-MM-DD")}`,
+                                            validThru: `${moment(x.dateAssigned).add("days",6).format("YYYY-MM-DD")}`
+                                        })
+                                        .then(() => {
+                                            console.log("Jared paperwork -2 !");
+                                        })
+                                        .catch(err => console.log(err));
+
+                                        API.addTask({
+                                            quotationIssuedBy: "Jared",
+                                            quotationNumber: "EMPTY",
+                                            service: `${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)} Paperwork- part 3`,
+                                            client: `${x.client}`,
+                                            instructions: `Create and send cards`,
+                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD").add("days",3).format("YYYY-MM-DD")}`,
+                                            validThru: `${moment(x.dateAssigned).add("days",14).format("YYYY-MM-DD")}`
+                                        })
+                                        .then(() => {
+                                            console.log("Jared paperwork -3 !");
+                                        })
+                                        .catch(err => console.log(err));
+
+                                        API.addTask({
+                                            quotationIssuedBy: "Jared",
+                                            quotationNumber: "EMPTY",
+                                            service: `${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)} Paperwork- part 4`,
+                                            client: `${x.client}`,
+                                            instructions: `Verify cards were recieved on due date`,
+                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD").add("days",14).format("YYYY-MM-DD")}`,
+                                            validThru: `${moment(x.dateAssigned).add("days",21).format("YYYY-MM-DD")}`
+                                        })
+                                        .then(() => {
+                                            console.log("Jared paperwork - 4 !");
+                                        })
+                                        .catch(err => console.log(err));
+                                    }
+                                })
+                                .catch(err => console.log(err));
+                            this.getCompletedTasks();
+                            
+                            
                             }}/>{' '}
                             Yes
                             </Label>

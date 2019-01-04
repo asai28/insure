@@ -8,7 +8,6 @@ import { FaSortAmountUp, FaSortAmountDown} from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import Moment from "react-moment";
 import "react-datepicker/dist/react-datepicker.css";
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { render } from "react-dom";
 import { Provider } from "react-alert";
 import AlertTemplate from "react-alert-template-basic";
