@@ -21,7 +21,6 @@ import { isNullOrUndefined } from "util";
 import DatePicker from "react-datepicker";
 import moment from "moment";
 import Moment from "react-moment";
-import "moment-timezone";
 import "react-datepicker/dist/react-datepicker.css";
 
 //Validation icons
