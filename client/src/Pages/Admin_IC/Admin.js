@@ -121,6 +121,17 @@ class Admin_IC extends React.Component{
         .catch(err => console.log(err));
     }
 
+    getCompletedTasks = () => {
+        API.completedTasks(this.state.employee)
+        .then(res => {
+            console.log(res.data);
+            this.setState({
+                completedTasks: res.data.filter(x => x.quoteApproved !== false)
+            });
+        })
+        .catch(err => console.log(err));
+    }
+
     handleChange(date) {
         this.setState({
           dateAssigned: date
@@ -139,7 +150,6 @@ class Admin_IC extends React.Component{
     render(){
         return (
             <div>
-            <br/><br/>
             <Jumbotron>
             <FormGroup>
                 <Label for="filter">Filter Results By:</Label> <br/>
@@ -186,12 +196,28 @@ class Admin_IC extends React.Component{
                 <option value="">Employee assigned task</option>
                     {this.state.employees.map(x => <option value={x.EMP_NAME}>{x.EMP_NAME}</option>)}
                 </Input>
-                <Input type="text" name="task" id="task" placeholder="Enter task here" onChange = {this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}/>
+
+                <Input type="select" name="task" id="task" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}>
+                <option value="">Choose a task category</option>
+                <option value="Admin Task">Admin Task</option>
+                <option value="Management Task">Management Task</option>
+                <option value="IC Employee Training">IC Employee Training</option>
+                <option value="Marketing Task">Marketing Task</option>
+                <option value="Miscellanous">Miscellanous</option>
+                <option value="Networking Task">Networking Task</option>
+                <option value="Sales Task">Sales Task</option>
+                <option value="Research Task">Research Task</option>
+                <option value="Scheduling Task">Scheduling Task</option>
+                </Input>
+
+                {/* <Input type="text" name="task" id="task" placeholder="Enter task here" onChange = {this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}/> */}
                 <Input type="select" name="client" id="client" onChange={this.handleInputChange} style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}>
                 <option value="">Choose Client</option>
                     {this.state.companyNames.map(x => <option value={x}>{x}</option>)}
                 </Input>
                 <br/>
+                <br/>
+                <Label style= {{'clear': 'both'}}>Task Details:</Label>
                 <Input
                 type="textarea"
                 name="details"
@@ -199,8 +225,8 @@ class Admin_IC extends React.Component{
                 onChange={this.handleInputChange}
                 placeholder = "Enter task details"
             />
-                
-                <br/> <br/>
+                <br/>
+                <Label>Pick date of assignment of task:</Label><br />
                 <DatePicker
                 selected={this.state.dateAssigned}
                 onChange={this.handleChange}
@@ -208,8 +234,9 @@ class Admin_IC extends React.Component{
                 placeholder="Date Assigned"
                 style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
               />
-              <br/>
+              <br/> <br/>
               
+              <Label>Due date of task:</Label><br />
               <Input
                 type="text"
                 name="dueDate"
@@ -217,17 +244,10 @@ class Admin_IC extends React.Component{
                 onChange={this.handleInputChange}
                 value = {moment(this.state.dateAssigned).add(90, "days").format("YYYY-MM-DD")}
                 placeholder = "Enter due date"
-                style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
-            />
-                <Input
-                type="text"
-                name="qty"
-                id="qty"
-                onChange={this.handleInputChange}
-                placeholder = "Enter qty of task if applicable"
-                style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
-            />
-                <Button onClick = {() => {
+                style = {{'width': '25%', 'margin':'5 5px', 'padding': '5 5px'}}
+            /> <br />
+                
+                <Button className="btn-success" style = {{'clear': 'both'}} onClick = {() => {
                     var item = {
                         quotationIssuedBy: this.state.toEmployee,
                         quotationNumber: "EMPTY",
@@ -244,13 +264,13 @@ class Admin_IC extends React.Component{
                         document.getElementById('addTask').reset();
                         })
                     .catch(err => console.log(err));
-                }}>Submit</Button>
+                }}>Add Task</Button>
             </Form>  
             </Jumbotron>
 
             <Container>
 
-            <h5 style = {{'fontFamily': 'Noto Serif SC, serif'}}>Active Tasks</h5>
+            <h5 style = {{'fontFamily': 'Noto Serif SC, serif'}}>All Tasks</h5>
             <br/>
             <table id="active">
             <thead className="table-header">
@@ -551,7 +571,7 @@ class Admin_IC extends React.Component{
                     }}/></th>
 
 
-                    <th className="col">SERVICE UNITS</th>
+                    {/* <th className="col">SERVICE UNITS</th> */}
                     <th className="col">DATE COMPLETED (YYYY-MM-DD) <FaSortAmountUp id = "sortDateCompletedDesc" onClick = {() => {
                         if(document.getElementById('sortDateCompletedDesc').style.color !== 'yellow'){
                             document.getElementById('sortDateCompletedDesc').style.color = 'yellow';
@@ -630,7 +650,7 @@ class Admin_IC extends React.Component{
                         });
                         
                     }}/> </th>
-                    <th className="col">STATUS/NOTES/COMMENTS</th>
+                    <th className="col">DETAILS</th>
                     {/* <th className="col">SERVICE DESCRIPTION</th> */}
                     <th className="col">QUOTE APPROVED</th>
                     <th className="col">COMPLETED</th>
@@ -645,23 +665,23 @@ class Admin_IC extends React.Component{
                     <td key={"activeList"+index+"_client"}>{x.client}</td>
                     <td key={"activeList"+index+"_dateAssigned"}>{moment(x.dateAssigned).format("YYYY-MM-DD")}</td>
                     <td key={"activeList"+index+"_dueTime"}>{moment(x.dueDate).format("YYYY-MM-DD")}</td>
-                    <td key={"activeList"+index+"_serviceUnits"}>{x.qty}</td>
-                    <td key={"activeList"+index+"_dateOfCompletion"}>
-                    <Input
+                    {/* <td key={"activeList"+index+"_serviceUnits"}>{x.qty}</td> */}
+                    <td key={"activeList"+index+"_dateOfCompletion"}>{moment(x.dateCompleted).format("YYYY-MM-DD")}
+                    {/* <Input
                           type="text"
                           name={"activeList"+ index + "_dateCompleted"}
                           id={"activeList"+ index + "_dateCompleted"}
                           defaultValue={moment(x.dateCompleted).format("YYYY-MM-DD")}
                           placeholder="Enter date of completion"
                           onChange={this.handleInputChange}
-                        />
+                        /> */}
                     </td>
                     <td key={"activeList"+ index +"_status_notes_comments"}>
                     <Input
                           type="textarea"
                           name={"activeList"+ index + "_status_notes_comments"}
                           id={"activeList"+ index + "_status_notes_comments"}
-                          defaultValue={x.status_notes_comments}
+                          defaultValue={x.details}
                           placeholder="Enter status/notes/comments"
                           onChange={this.handleInputChange}
                         />
@@ -674,14 +694,15 @@ class Admin_IC extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={true}  onChange = {this.handleInputChange} checked = {x.quoteApproved} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={true}  onChange = {this.handleInputChange} checked = {x.quoteApproved || !isNullOrUndefined(x.quoteApproved)} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
                                     // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
                                     // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
-                                    dateCompleted: moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: true,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    dateCompleted: x.dateCompleted,
+                                    status_notes_comments: x.status_notes_comments,
+                                    completed: x.completed
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(res => {
@@ -712,14 +733,14 @@ class Admin_IC extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={false}  onChange = {this.handleInputChange} checked = {!x.quoteApproved} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={false}  onChange = {this.handleInputChange} checked = {!isNullOrUndefined(x.quoteApproved) && !x.quoteApproved} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
                                     // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
                                     quoteApproved: false,
-                                    // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    dateCompleted: x.dateCompleted,
+                                    status_notes_comments: x.status_notes_comments,
+                                    completed: x.completed
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Quote not approved"))
@@ -734,19 +755,18 @@ class Admin_IC extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} checked={x.completed} value={true} onChange = {this.handleInputChange} onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_completed"} checked={x.completed || !isNullOrUndefined(x.completed)} value={true} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
                                 console.log(document.getElementById("activeList"+index+ "_dateCompleted").value, document.getElementById("activeList"+ index + "_status_notes_comments").value);
                                 console.log(!isNullOrUndefined(x.quoteApproved))
                                 var item = {
-                                    completed: true,
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    dateCompleted: x.dateCompleted,
+                                    status_notes_comments: x.status_notes_comments,
+                                    completed: true
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => {console.log("Task completed");
-                                this.getCompletedTasks();
                                 })
                                 .catch(err => console.log(err))
                             }}/>{' '}
@@ -755,15 +775,13 @@ class Admin_IC extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} checked={!x.completed} value={false} onChange = {this.handleInputChange} disabled ={
-                                isNullOrUndefined(x.quoteApproved)
-                                } onClick = {() => {
+                            <Input type="radio" name={"activeList"+index+"_completed"} checked={!isNullOrUndefined(x.quoteApproved) && !x.completed} value={false} onChange = {this.handleInputChange} onClick = {() => {
                              console.log(x.id);
                                 var item = {
-                                    completed: false,
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    dateCompleted: x.dateCompleted,
+                                    status_notes_comments: x.status_notes_comments,
+                                    completed: false
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Task incomplete"))

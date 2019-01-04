@@ -386,7 +386,7 @@ export default class Example extends React.Component {
       billable: this.state.billableService,
       costForService: this.state.costForService,
       durationInMin: this.state.durationInMin,
-      qty: (isNullOrUndefined(this.state.numServiceUnits)) ? parseFloat(this.state.numServiceUnits): 1,
+      qty: (!isNullOrUndefined(this.state.numServiceUnits)) ? parseFloat(this.state.numServiceUnits): 1,
       alternateName: this.state.alternateName.length === 0 ? this.state.service : this.state.alternateName,
       cost: parseFloat(this.state.costForService),
       serviceDescription: this.state.description
@@ -427,15 +427,23 @@ export default class Example extends React.Component {
   saveServices = () => {
     API.getServiceRequests()
       .then(res => {
-        // if (this.state.service.trim() !== "") {
-        //   this.addService();
-        // }
+        
         this.setState({
           requestedServices : res.data
+        });
+        API.getServiceRequests()
+        .then(res => {
+        var sum = 0;
+          for(let i = 0; i < res.data.length; ++i){
+            if(res.data[i].billable){
+            sum += res.data[i].qty * res.data[i].cost
+            }
+          }
+        this.setState({
+          totalCost: sum
+        });
         })
-        // this.setState({
-        //   requestedServiceRows: this.getServices()
-        // });
+        .catch(err => console.log(err));
       })
       .catch(err => console.log(err));
     this.toggleServiceModal();
@@ -712,9 +720,6 @@ export default class Example extends React.Component {
 
   handleSubmit = e => {
     e.preventDefault();
-    // this.setState({
-    //   requestedServiceRows: this.getServices()
-    // });
 
     var item = {
       companyName: this.state.companyName,
@@ -781,7 +786,7 @@ export default class Example extends React.Component {
                       serviceDescription: res1.data[i].serviceDescription,
                       quotationIssuedBy: res.data.quotationIssuedBy
                     })
-                    .then(res3 => {console.log("Added a task")})
+                    .then(() => {console.log("Added a task")})
                     .catch(err => console.log(err));
                   }
                 }
@@ -2027,6 +2032,10 @@ export default class Example extends React.Component {
                             console.log("Deleted");
                             API.getServiceRequests()
                             .then(res => {
+                              // this.setState({
+                              //   requestedServices: res.data
+                              // });
+                              console.log(res.data);
                             var sum = 0;
                               for(let i = 0; i < res.data.length; ++i){
                                 if(res.data[i].billable){

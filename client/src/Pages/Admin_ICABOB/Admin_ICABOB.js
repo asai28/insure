@@ -6,17 +6,17 @@ import moment from "moment";
 import { isNullOrUndefined } from "util";
 import { FaSortAmountUp, FaSortAmountDown} from "react-icons/fa";
 import DatePicker from "react-datepicker";
-import Moment from "react-moment";
 import "react-datepicker/dist/react-datepicker.css";
-import { render } from "react-dom";
 import { Provider } from "react-alert";
 import AlertTemplate from "react-alert-template-basic";
 import Home from "./Home.js";
 
 const options = {
+    position: 'bottom center',
     timeout: 5000,
-    position: "bottom center"
-  };
+    offset: '30px',
+    transition: 'scale'
+  }
   
 
 //array sort function
@@ -43,6 +43,7 @@ class Admin_ICABOB extends React.Component{
         this.filterResults = this.filterResults.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.displayAlert = this.displayAlert.bind(this);
+        this.getCompletedTasks = this.getCompletedTasks.bind(this);
     }
 
     handleInputChange = e => {
@@ -50,6 +51,17 @@ class Admin_ICABOB extends React.Component{
         this.setState({
             [name]: value
         });
+    }
+
+    getCompletedTasks = () => {
+        API.completedTasks(this.state.employee)
+        .then(res => {
+            console.log(res.data);
+            this.setState({
+                completedTasks: res.data.filter(x => x.quoteApproved !== false)
+            });
+        })
+        .catch(err => console.log(err));
     }
 
     getTasks = () => {
@@ -138,7 +150,6 @@ class Admin_ICABOB extends React.Component{
     render(){
         return (
             <div>
-            <br/><br/>
             <Jumbotron>
             <FormGroup>
                 <Label for="filter">Filter Results By:</Label> <br/>
@@ -206,6 +217,8 @@ class Admin_ICABOB extends React.Component{
                     {this.state.companyNames.map(x => <option value={x}>{x}</option>)}
                 </Input>
                 <br/>
+                <br/>
+                <Label style= {{'clear': 'both'}}>Task Details:</Label>
                 <Input
                 type="textarea"
                 name="details"
@@ -213,8 +226,8 @@ class Admin_ICABOB extends React.Component{
                 onChange={this.handleInputChange}
                 placeholder = "Enter task details"
             />
-                
-                <br/> <br/>
+                <br/>
+                <Label>Pick date of assignment of task:</Label><br />
                 <DatePicker
                 selected={this.state.dateAssigned}
                 onChange={this.handleChange}
@@ -222,8 +235,9 @@ class Admin_ICABOB extends React.Component{
                 placeholder="Date Assigned"
                 style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
               />
-              <br/>
+              <br/> <br/>
               
+              <Label>Due date of task:</Label><br />
               <Input
                 type="text"
                 name="dueDate"
@@ -231,10 +245,10 @@ class Admin_ICABOB extends React.Component{
                 onChange={this.handleInputChange}
                 value = {moment(this.state.dateAssigned).add(90, "days").format("YYYY-MM-DD")}
                 placeholder = "Enter due date"
-                style = {{'width': '25%', 'float': 'left', 'margin':'5 5px', 'padding': '5 5px'}}
-            />
+                style = {{'width': '25%', 'margin':'5 5px', 'padding': '5 5px'}}
+            /> <br />
                 
-                <Button onClick = {() => {
+                <Button className="btn-success" style = {{'clear': 'both'}} onClick = {() => {
                     var item = {
                         quotationIssuedBy: this.state.toEmployee,
                         quotationNumber: "EMPTY",
@@ -251,7 +265,7 @@ class Admin_ICABOB extends React.Component{
                         document.getElementById('addTask').reset();
                         })
                     .catch(err => console.log(err));
-                }}>Submit</Button>
+                }}>Add Task</Button>
             </Form>  
             </Jumbotron>
 
@@ -558,7 +572,7 @@ class Admin_ICABOB extends React.Component{
                     }}/></th>
 
 
-                    <th className="col">SERVICE UNITS</th>
+                    {/* <th className="col">SERVICE UNITS</th> */}
                     <th className="col">DATE COMPLETED (YYYY-MM-DD) <FaSortAmountUp id = "sortDateCompletedDesc" onClick = {() => {
                         if(document.getElementById('sortDateCompletedDesc').style.color !== 'yellow'){
                             document.getElementById('sortDateCompletedDesc').style.color = 'yellow';
@@ -648,7 +662,7 @@ class Admin_ICABOB extends React.Component{
             <tbody>
                 {this.state.tasks.filter(x => !isNullOrUndefined(x.quotationIssuedBy)).map((x) => 
                 <tr key={"activeList"+x.id} className="table-row">
-                    <td key={"activeList"+x.id+"_quotationNumber"}>{!isNullOrUndefined(x.quotationIssuedBy) ? "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023) : "QN_EMPTY_" + (x.id + 1023)}</td>
+                    <td key={"activeList"+x.id+"_quotationNumber"} className = "col">{!isNullOrUndefined(x.quotationIssuedBy) ? "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023) : "QN_EMPTY_" + (x.id + 1023)}</td>
                     <td key={"activeList"+x.id+"_service"}>
                     <Input
                           type="text"
@@ -689,7 +703,7 @@ class Admin_ICABOB extends React.Component{
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    <td key={"activeList"+x.id+"_serviceUnits"}>
+                    {/* <td key={"activeList"+x.id+"_serviceUnits"}>
                     <Input
                           type="text"
                           name={"activeList"+x.id+"_serviceUnits"}
@@ -698,7 +712,7 @@ class Admin_ICABOB extends React.Component{
                           placeholder="Enter service units"
                           onChange={this.handleInputChange}
                         />
-                    </td>
+                    </td> */}
                     <td key={"activeList"+x.id+"_dateOfCompletion"}>
                     <Input
                           type="text"
@@ -727,34 +741,37 @@ class Admin_ICABOB extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+x.id+"_quoteApproved"} id={"activeList"+x.id+"_quoteApproved"} value={true} onChange = {this.handleInputChange} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_quoteApproved"} id={"activeList"+x.id+"_quoteApproved"} checked = {!isNullOrUndefined(x.quoteApproved) || x.quoteApproved} value={true} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
                                     // dateCompleted: document.getElementById("activeList"+x.id+ "_dateCompleted").value,
                                     // details: document.getElementById("activeList"+ x.id + "_details")
                                     quoteApproved: true,
-                                    details: document.getElementById("activeList"+ x.id + "_details").value
+                                    dateCompleted: x.dateCompleted,
+                                    status_notes_comments: x.status_notes_comments,
+                                    completed: x.completed
+                                    // details: document.getElementById("activeList"+ x.id + "_details").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(res => {
                                     console.log("Quote approved");
                                     console.log(res.data);
-                                    API.allTasks()
-                                    .then(res2 => {
-                                        console.log(res2.data);
-                                        this.setState({
-                                            tasks: res2.data,
-                                        });
+                        //             API.allTasks()
+                        //             .then(res2 => {
+                        //                 console.log(res2.data);
+                        //                 this.setState({
+                        //                     tasks: res2.data,
+                        //                 });
 
-                                    this.setState({
-                                    tasks: fastSort(fastSort(this.state.tasks).by([
-                                    {desc: this.state.desc}
-                                    ])).by([
-                                    {asc: this.state.asc}
-                                    ])
-                        });
-                                    })
-                                    .catch(err => console.log(err));
+                        //             this.setState({
+                        //             tasks: fastSort(fastSort(this.state.tasks).by([
+                        //             {desc: this.state.desc}
+                        //             ])).by([
+                        //             {asc: this.state.asc}
+                        //             ])
+                        // });
+                        //             })
+                        //             .catch(err => console.log(err));
                 
                                     })
                                 .catch(err => console.log(err))
@@ -764,25 +781,25 @@ class Admin_ICABOB extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+x.id+"_quoteApproved"} id={"activeList"+x.id+"_quoteApproved"} value={false} onChange = {this.handleInputChange} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_quoteApproved"} id={"activeList"+x.id+"_quoteApproved"} checked = {!isNullOrUndefined(x.quoteApproved) && !x.quoteApproved} value={false} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
                                     quoteApproved: false,
-                                    // details: document.getElementById("activeList"+ x.id + "_details")
-                                    // dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
-                                    details: document.getElementById("activeList"+ x.id + "_details").value
+                                    dateCompleted: x.dateCompleted,
+                                    status_notes_comments: x.status_notes_comments,
+                                    completed: x.completed
                                 };
                                 API.modifyTask(x.id, item)
                                 .then(() => {
                                     console.log("Quote not approved");
-                                    API.allTasks()
-                                    .then(res2 => {
-                                        console.log(res2.data);
-                                        this.setState({
-                                            tasks: res2.data
-                                        });
-                                    })
-                                    .catch(err => console.log(err));
+                                    // API.allTasks()
+                                    // .then(res2 => {
+                                    //     console.log(res2.data);
+                                    //     this.setState({
+                                    //         tasks: res2.data
+                                    //     });
+                                    // })
+                                    // .catch(err => console.log(err));
                                 })
                                 .catch(err => console.log(err));
 
@@ -796,19 +813,18 @@ class Admin_ICABOB extends React.Component{
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+x.id+"_completed"} id={"activeList"+x.id+"_completed"} value={true} onChange = {this.handleInputChange} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_completed"} id={"activeList"+x.id+"_completed"} checked = {!isNullOrUndefined(x.completed) || x.completed} value={true} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
                                 console.log(document.getElementById("activeList"+x.id+ "_dateCompleted").value, document.getElementById("activeList"+ x.id + "_details").value);
                                 console.log(!isNullOrUndefined(x.quoteApproved))
                                 var item = {
-                                    completed: true,
-                                    // dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
-                                    details: document.getElementById("activeList"+ x.id + "_details").value
+                                    dateCompleted: x.dateCompleted,
+                                    status_notes_comments: x.status_notes_comments,
+                                    completed: true
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => {console.log("Task completed");
-                                this.getCompletedTasks();
                                 })
                                 .catch(err => console.log(err))
                             }}/>{' '}
@@ -817,14 +833,14 @@ class Admin_ICABOB extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+x.id+"_completed"} id={"activeList"+x.id+"_completed"} checked={!x.completed} value={false} onChange = {this.handleInputChange} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_completed"} id={"activeList"+x.id+"_completed"} checked={!isNullOrUndefined(x.completed) && !x.completed} value={false} onChange = {this.handleInputChange} onClick = {() => {
                              console.log(x.id);
                                 var item = {
                                   
-                                    completed: false,
-                                    // dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
-                                    details: document.getElementById("activeList"+ x.id + "_details").value
+                                    dateCompleted: x.dateCompleted,
+                                    status_notes_comments: x.status_notes_comments,
+                                    completed: false
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Task incomplete"))
@@ -839,19 +855,23 @@ class Admin_ICABOB extends React.Component{
                     
                     <Button className = 'btn-success' onClick = {() => {
                         console.log(x.id);
+                        console.log(document.getElementById("activeList"+x.id+"_quoteApproved").value, document.getElementById("activeList"+x.id+"_completed").value);
                                 var item = {
                                     service: document.getElementById("activeList"+x.id+"_service").value,
-            client: document.getElementById("activeList"+x.id+"_client").value, 
-            dateAssigned: document.getElementById("activeList"+x.id+"_dateAssigned").value,  
-            dueDate: document.getElementById("activeList"+x.id+"_dueTime").value, 
-            qty: document.getElementById("activeList"+x.id+"_serviceUnits").value, 
-            quoteApproved: document.getElementById("activeList"+x.id+"_quoteApproved").value, 
-            dateCompleted: document.getElementById("activeList"+ x.id + "_dateCompleted").value, 
-            details: document.getElementById("activeList"+ x.id + "_details").value, 
-            completed: document.getElementById("activeList"+x.id+"_completed").value, 
+                                    client: document.getElementById("activeList"+x.id+"_client").value, 
+                                    dateAssigned: document.getElementById("activeList"+x.id+"_dateAssigned").value,  
+                                    dueDate: document.getElementById("activeList"+x.id+"_dueTime").value, 
+                                    qty: document.getElementById("activeList"+x.id+"_serviceUnits").value, 
+                                    quoteApproved: !isNullOrUndefined(x.quoteApproved) || x.quoteApproved,
+                                    dateCompleted: document.getElementById("activeList"+ x.id + "_dateCompleted").value, 
+                                    details: document.getElementById("activeList"+ x.id + "_details").value, 
+                                    completed: !isNullOrUndefined(x.completed) || x.completed
                                 }
                                 API.modifyEntireTask(x.id, item)
-                                .then(() => console.log("Task updated"))
+                                .then(() => {
+                                    console.log("Task updated");
+                                    this.getCompletedTasks();
+                                })
                                 .catch(err => console.log(err))   
                     }}> Update Task</Button></td>
                     <td key={"activeList"+x.id+"_removeTask"}>

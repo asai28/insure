@@ -22,7 +22,9 @@ class TaskList extends React.Component{
             tooltipOpen: false,
             sortParameters: new Map([]),
             asc: [],
-            desc: []
+            desc: [],
+            incomplete: [],
+            incompleteNullTasks: []
         };
         this.toggle = this.toggle.bind(this);
         this.getTasks = this.getTasks.bind(this);
@@ -58,24 +60,26 @@ class TaskList extends React.Component{
 
     getTasks = () => {
         if(this.state.employee.length > 0){
-            API.getEmployeeTasks(this.state.employee.split(" ").join("%20"))
-            .then(res => {
-                console.log(res.data);
-                this.setState({
-                    tasks: res.data
-                });
-                this.getCompletedTasks();
-
                 API.incompleteTasks(this.state.employee.split(" ").join("%20"))
-                .then(res2 => console.log(res2.data))
+                .then(res2 => {
+                    console.log(res2.data);
+                    this.setState({
+                        incomplete : res2.data
+                    })
+                    API.incompleteNullTasks(this.state.employee.split(" ").join("%20"))
+                    .then(res2 => {
+                        console.log(res2.data);
+                        this.setState({
+                            incompleteNullTasks : res2.data
+                        })
+                        this.setState({
+                            tasks: this.state.incomplete.concat(this.state.incompleteNullTasks).filter(x => x.quoteApproved !== false)
+                        });
+                        this.getCompletedTasks();
+                    })
+                    .catch(err => console.log(err));
+                })
                 .catch(err => console.log(err));
-
-                API.incompleteNullTasks(this.state.employee.split(" ").join("%20"))
-                .then(res2 => console.log(res2.data))
-                .catch(err => console.log(err));
-
-            })
-            .catch(err => console.log(err));
         }
     }
 
@@ -92,7 +96,7 @@ class TaskList extends React.Component{
         .then(res => {
             console.log(res.data);
             this.setState({
-                completedTasks: res.data
+                completedTasks: res.data.filter(x => x.quoteApproved !== false)
             });
         })
         .catch(err => console.log(err));
@@ -439,7 +443,7 @@ class TaskList extends React.Component{
                     }}/></th>
 
 
-                    <th className="col">SERVICE UNITS</th>
+                    {/* <th className="col">SERVICE UNITS</th> */}
                     <th className="col">DATE COMPLETED (YYYY-MM-DD) <FaSortAmountUp id = "sortDateCompletedDesc" onClick = {() => {
                         if(document.getElementById('sortDateCompletedDesc').style.color !== 'yellow'){
                             document.getElementById('sortDateCompletedDesc').style.color = 'yellow';
@@ -526,71 +530,60 @@ class TaskList extends React.Component{
             </thead>
             <tbody>
                 {this.state.tasks.map((x, index) => 
-                <tr key={"activeList"+index} className="table-row">
-                    <td key={"activeList"+index+"_quotationNumber"}>{"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023)}</td>
-                    <td key={"activeList"+index+"_service"}>{x.service}</td>
-                    <td key={"activeList"+index+"_client"}>{x.client}</td>
-                    <td key={"activeList"+index+"_dateAssigned"}>{moment(x.dateAssigned).format("YYYY-MM-DD")}</td>
-                    <td key={"activeList"+index+"_dueTime"}>{moment(x.dueDate).format("YYYY-MM-DD")}</td>
-                    <td key={"activeList"+index+"_serviceUnits"}>{x.qty}</td>
-                    <td key={"activeList"+index+"_dateOfCompletion"}>
+                <tr key={"activeList"+x.id} className="table-row">
+                    <td key={"activeList"+x.id+"_quotationNumber"}>{"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023)}</td>
+                    <td key={"activeList"+x.id+"_service"}>{x.service}</td>
+                    <td key={"activeList"+x.id+"_client"}>{x.client}</td>
+                    <td key={"activeList"+x.id+"_dateAssigned"}>{moment(x.dateAssigned).format("YYYY-MM-DD")}</td>
+                    <td key={"activeList"+x.id+"_dueTime"}>{moment(x.dueDate).format("YYYY-MM-DD")}</td>
+                    {/* <td key={"activeList"+x.id+"_serviceUnits"}>{x.qty}</td> */}
+                    <td key={"activeList"+x.id+"_dateOfCompletion"}>
                     <Input
                           type="text"
-                          name={"activeList"+ index + "_dateCompleted"}
-                          id={"activeList"+ index + "_dateCompleted"}
+                          name={"activeList"+ x.id + "_dateCompleted"}
+                          id={"activeList"+ x.id + "_dateCompleted"}
                           defaultValue={moment(x.dateCompleted).format("YYYY-MM-DD")}
                           placeholder="Enter date of completion"
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    <td key={"activeList"+ index +"_status_notes_comments"}>
+                    <td key={"activeList"+ x.id +"_status_notes_comments"}>
                     <Input
                           type="textarea"
-                          name={"activeList"+ index + "_status_notes_comments"}
-                          id={"activeList"+ index + "_status_notes_comments"}
+                          name={"activeList"+ x.id + "_status_notes_comments"}
+                          id={"activeList"+ x.id + "_status_notes_comments"}
                           defaultValue={x.status_notes_comments}
                           placeholder="Enter status/notes/comments"
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    {/* <td key={"activeList" + index + "serviceDescription"}>
+                    {/* <td key={"activeList" + x.id + "serviceDescription"}>
                      <span style = {{'fontSize': '10px'}}>{x.serviceDescription}</span>
 
                     </td> */}
-                    <td key={"activeList"+index+"_quoteApproved"}>
+                    <td key={"activeList"+x.id+"_quoteApproved"}>
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={true}  onChange = {this.handleInputChange} checked = {x.quoteApproved} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_quoteApproved"} id={"activeList"+x.id+"_quoteApproved"} value={true}  onChange = {this.handleInputChange} checked = {!isNullOrUndefined(x.quoteApproved) || x.quoteApproved } onClick = {() => {
                                 console.log(x.id);
                                 var item = {
-                                    // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
-                                    // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
-                                    dateCompleted: moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    // dateCompleted: document.getElementById("activeList"+x.id+ "_dateCompleted").value,
+                                    // status_notes_comments: document.getElementById("activeList"+ x.id + "_status_notes_comments")
+                                    dateCompleted: moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: true,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    status_notes_comments: document.getElementById("activeList"+ x.id + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(res => {
                                     console.log("Quote approved");
-                                    console.log(res.data);
-                                    API.getEmployeeTasks(this.state.employee.split(" ").join("%20"))
-                                    .then(res2 => {
-                                        console.log(res2.data);
-                                        this.setState({
-                                            tasks: res2.data,
-                                        });
-
+                                    this.getTasks();
                                     this.setState({
                                     tasks: fastSort(fastSort(this.state.tasks).by([
                                     {desc: this.state.desc}
                                     ])).by([
                                     {asc: this.state.asc}
-                                    ])
-                        });
-                                    })
-                                    .catch(err => console.log(err));
-                
+                                    ])});
                                     })
                                 .catch(err => console.log(err))
                             }}/>{' '}
@@ -599,17 +592,26 @@ class TaskList extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_quoteApproved"} id={"activeList"+index+"_quoteApproved"} value={false}  onChange = {this.handleInputChange} checked = {!x.quoteApproved} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_quoteApproved"} id={"activeList"+x.id+"_quoteApproved"} value={false}  onChange = {this.handleInputChange} checked = {!isNullOrUndefined(x.quoteApproved) && !x.quoteApproved} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
-                                    // dateCompleted: document.getElementById("activeList"+index+ "_dateCompleted").value,
+                                    // dateCompleted: document.getElementById("activeList"+x.id+ "_dateCompleted").value,
                                     quoteApproved: false,
-                                    // status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments")
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    // status_notes_comments: document.getElementById("activeList"+ x.id + "_status_notes_comments")
+                                    dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    status_notes_comments: document.getElementById("activeList"+ x.id + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
-                                .then(() => console.log("Quote not approved"))
+                                .then(() => {
+                                    console.log("Quote not approved");
+                                    this.getTasks();
+                                    this.setState({
+                                    tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {desc: this.state.desc}
+                                    ])).by([
+                                    {asc: this.state.asc}
+                                    ])});
+                                    })
                                 .catch(err => console.log(err))
                             }}/>{' '}
                             No
@@ -617,19 +619,19 @@ class TaskList extends React.Component{
                         </FormGroup>
                     </FormGroup>
                     </td>
-                    <td key={"activeList"+index+"_completed"}>
+                    <td key={"activeList"+x.id+"_completed"}>
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} checked={x.completed} value={true} onChange = {this.handleInputChange} onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_completed"} value={true} onChange = {this.handleInputChange} checked = {!isNullOrUndefined(x.completed) || x.completed} onClick = {() => {
                                 console.log(x.id);
-                                console.log(document.getElementById("activeList"+index+ "_dateCompleted").value, document.getElementById("activeList"+ index + "_status_notes_comments").value);
+                                console.log(document.getElementById("activeList"+x.id+ "_dateCompleted").value, document.getElementById("activeList"+ x.id + "_status_notes_comments").value);
                                 console.log(!isNullOrUndefined(x.quoteApproved))
                                 API.modifyTask(x.id, {
                                     completed: true,
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
-                                    quoteApproved: x.quoteApproved,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    quoteApproved: x.quoteApproved || document.getElementById(),
+                                    status_notes_comments: document.getElementById("activeList"+ x.id + "_status_notes_comments").value
                                 })
                                 .then(() => {
                                         console.log("Task completed");
@@ -641,8 +643,8 @@ class TaskList extends React.Component{
                                             service: `Schedule a trainer`,
                                             client: `${x.client}`,
                                             instructions: `Create a task for trainer/ service provider manually`,
-                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD")}`,
-                                            validThru: `${moment(x.dateAssigned).add("days",3).format("YYYY-MM-DD")}`
+                                            startDate: x.dateAssigned,
+                                            validThru: moment(Date(x.dateAssigned)).add(3, "days").format("YYYY-MM-DD")
                                         })
                                         .then(() => {
                                             console.log("Jared schedules a trainer!");
@@ -653,11 +655,11 @@ class TaskList extends React.Component{
                                         API.addTask({
                                             quotationIssuedBy: "Jared",
                                             quotationNumber: "EMPTY",
-                                            service: `Get paperwork ready for ${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)}`,
+                                            service: `Get paperwork ready for ${"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_"+ (x.id + 1023)}`,
                                             client: `${x.client}`,
                                             instructions: ``,
-                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD")}`,
-                                            validThru: `${moment(x.dateAssigned).add("days",3).format("YYYY-MM-DD")}`
+                                            startDate: moment(x.dateAssigned).format("YYYY-MM-DD"),
+                                            validThru: moment(x.dateAssigned).add(3, "days").format("YYYY-MM-DD")
                                         })
                                         .then(() => {
                                             console.log("Jared gets paperwork ready!");
@@ -669,7 +671,7 @@ class TaskList extends React.Component{
                                             quotationNumber: "EMPTY",
                                             service: `Training`,
                                             client: `${x.client}`,
-                                            instructions: `Provide training for ${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)}`,
+                                            instructions: `Provide training for ${"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_"+ (x.id + 1023)}`,
                                             startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD")}`,
                                             validThru: `${moment(x.dateAssigned).add("days",30).format("YYYY-MM-DD")}`
                                         })
@@ -681,27 +683,25 @@ class TaskList extends React.Component{
                                         API.addTask({
                                             quotationIssuedBy: "Jared",
                                             quotationNumber: "EMPTY",
-                                            service: `${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)} Paperwork- part 1`,
-                                            client: `${x.client}`,
+                                            service: "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_"+ (x.id + 1023) + " Paperwork- part 1",
+                                            client: x.client,
                                             instructions: `Recieve, scan file, sign-in sheet and update training tracker`,
-                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD").add("days",30).format("YYYY-MM-DD")}`,
-                                            validThru: `${moment(x.dateAssigned).add("days",6).format("YYYY-MM-DD")}`
+                                            startDate: moment(x.dateAssigned).add(30, "days").format("YYYY-MM-DD"),
+                                            validThru: moment(x.dateAssigned).add(36,"days").format("YYYY-MM-DD")
                                         })
                                         .then(() => {
                                             console.log("Jared paperwork -1 !");
                                         })
                                         .catch(err => console.log(err));
 
-                                        
-
                                         API.addTask({
                                             quotationIssuedBy: "Jared",
                                             quotationNumber: "EMPTY",
-                                            service: `${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)} Paperwork- part 2`,
+                                            service: "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_"+ (x.id + 1023) + " Paperwork- part 2",
                                             client: `${x.client}`,
                                             instructions: `Verify names of class participants with client`,
-                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD").add("days",3).format("YYYY-MM-DD")}`,
-                                            validThru: `${moment(x.dateAssigned).add("days",6).format("YYYY-MM-DD")}`
+                                            startDate: moment(x.dateAssigned).add(3, "days").format("YYYY-MM-DD"),
+                                            validThru: moment(x.dateAssigned).add(6, "days").format("YYYY-MM-DD")
                                         })
                                         .then(() => {
                                             console.log("Jared paperwork -2 !");
@@ -711,11 +711,11 @@ class TaskList extends React.Component{
                                         API.addTask({
                                             quotationIssuedBy: "Jared",
                                             quotationNumber: "EMPTY",
-                                            service: `${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)} Paperwork- part 3`,
+                                            service: "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_"+ (x.id + 1023) + " Paperwork- part 3",
                                             client: `${x.client}`,
                                             instructions: `Create and send cards`,
-                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD").add("days",3).format("YYYY-MM-DD")}`,
-                                            validThru: `${moment(x.dateAssigned).add("days",14).format("YYYY-MM-DD")}`
+                                            startDate: moment(x.dateAssigned).add(3,"days").format("YYYY-MM-DD"),
+                                            validThru: moment(x.dateAssigned).add(14, "days").format("YYYY-MM-DD")
                                         })
                                         .then(() => {
                                             console.log("Jared paperwork -3 !");
@@ -725,11 +725,11 @@ class TaskList extends React.Component{
                                         API.addTask({
                                             quotationIssuedBy: "Jared",
                                             quotationNumber: "EMPTY",
-                                            service: `${"QN" + x.quotationIssuedBy.substring(0,3) + "_"+ (x.id + 1023)} Paperwork- part 4`,
+                                            service: "QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_"+ (x.id + 1023) + " Paperwork- part 4",
                                             client: `${x.client}`,
                                             instructions: `Verify cards were recieved on due date`,
-                                            startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD").add("days",14).format("YYYY-MM-DD")}`,
-                                            validThru: `${moment(x.dateAssigned).add("days",21).format("YYYY-MM-DD")}`
+                                            startDate: moment(x.dateAssigned).add(14,"days").format("YYYY-MM-DD"),
+                                            validThru: moment(x.dateAssigned).add(21, "days").format("YYYY-MM-DD")
                                         })
                                         .then(() => {
                                             console.log("Jared paperwork - 4 !");
@@ -747,15 +747,13 @@ class TaskList extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"activeList"+index+"_completed"} checked={!x.completed} value={false} onChange = {this.handleInputChange} disabled ={
-                                isNullOrUndefined(x.quoteApproved)
-                                } onClick = {() => {
+                            <Input type="radio" name={"activeList"+x.id+"_completed"}  checked = {!isNullOrUndefined(x.completed) && !x.completed} value={false} onChange = {this.handleInputChange} onClick = {() => {
                              console.log(x.id);
                                 var item = {
                                     completed: false,
-                                    dateCompleted:moment(document.getElementById("activeList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
-                                    quoteApproved: x.quoteApproved,
-                                    status_notes_comments: document.getElementById("activeList"+ index + "_status_notes_comments").value
+                                    dateCompleted:moment(document.getElementById("activeList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    quoteApproved: x.quoteApproved || document.getElementById("activeList"+x.id+"_quoteApproved").value === true,
+                                    status_notes_comments: document.getElementById("activeList"+ x.id + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Task incomplete"))
@@ -1182,72 +1180,61 @@ class TaskList extends React.Component{
                 </tr>
             </thead>
             <tbody>
-                {this.state.completedTasks.map((x, index) => 
-                <tr key={"completedList"+index} className="table-row">
-                    <td key={"completedList"+index+"_quotationNumber"}>{"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023)}</td>
-                    <td key={"completedList"+index+"_service"}>{x.service}</td>
-                    <td key={"completedList"+index+"_client"}>{x.client}</td>
-                    <td key={"completedList"+index+"_dateAssigned"}>{moment(x.dateAssigned).format("YYYY-MM-DD")}</td>
-                    <td key={"completedList"+index+"_dueTime"}>{moment(x.dueDate).format("YYYY-MM-DD")}</td>
-                    <td key={"completedList"+index+"_serviceUnits"}>{x.qty}</td>
-                    <td key={"completedList"+index+"_dateOfCompletion"}>
+                {this.state.completedTasks.map((x) => 
+                <tr key={"completedList"+x.id} className="table-row">
+                    <td key={"completedList"+x.id+"_quotationNumber"}>{"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_" + (x.id + 1023)}</td>
+                    <td key={"completedList"+x.id+"_service"}>{x.service}</td>
+                    <td key={"completedList"+x.id+"_client"}>{x.client}</td>
+                    <td key={"completedList"+x.id+"_dateAssigned"}>{moment(x.dateAssigned).format("YYYY-MM-DD")}</td>
+                    <td key={"completedList"+x.id+"_dueTime"}>{moment(x.dueDate).format("YYYY-MM-DD")}</td>
+                    <td key={"completedList"+x.id+"_serviceUnits"}>{x.qty}</td>
+                    <td key={"completedList"+x.id+"_dateOfCompletion"}>
                     <Input
                           type="text"
-                          name={"completedList"+ index + "_dateCompleted"}
-                          id={"completedList"+ index + "_dateCompleted"}
+                          name={"completedList"+ x.id + "_dateCompleted"}
+                          id={"completedList"+ x.id + "_dateCompleted"}
                           defaultValue={moment(x.dateCompleted).format("YYYY-MM-DD")}
                           placeholder="Enter date of completion"
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    <td key={"completedList"+ index +"_status_notes_comments"}>
+                    <td key={"completedList"+ x.id +"_status_notes_comments"}>
                     <Input
                           type="textarea"
-                          name={"completedList"+ index + "_status_notes_comments"}
-                          id={"completedList"+ index + "_status_notes_comments"}
+                          name={"completedList"+ x.id + "_status_notes_comments"}
+                          id={"completedList"+ x.id + "_status_notes_comments"}
                           defaultValue={x.status_notes_comments}
                           placeholder="Enter status/notes/comments"
                           onChange={this.handleInputChange}
                         />
                     </td>
-                    {/* <td key={"completedList" + index + "serviceDescription"}>
+                    {/* <td key={"completedList" + x.id + "serviceDescription"}>
                      <span style = {{'fontSize': '10px'}}>{x.serviceDescription}</span>
 
                     </td> */}
-                    <td key={"completedList"+index+"_quoteApproved"}>
+                    <td key={"completedList"+x.id+"_quoteApproved"}>
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"completedList"+index+"_quoteApproved"} id={"completedList"+index+"_quoteApproved"} value={true}  onChange = {this.handleInputChange} checked = {x.quoteApproved} onClick = {() => {
+                            <Input type="radio" name={"completedList"+x.id+"_quoteApproved"} id={"completedList"+x.id+"_quoteApproved"} value={true}  onChange = {this.handleInputChange} checked = {!isNullOrUndefined(x.quoteApproved) || x.quoteApproved} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
-                                    // dateCompleted: document.getElementById("completedList"+index+ "_dateCompleted").value,
-                                    // status_notes_comments: document.getElementById("completedList"+ index + "_status_notes_comments")
-                                    dateCompleted: moment(document.getElementById("completedList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    // dateCompleted: document.getElementById("completedList"+x.id+ "_dateCompleted").value,
+                                    // status_notes_comments: document.getElementById("completedList"+ x.id + "_status_notes_comments")
+                                    dateCompleted: moment(document.getElementById("completedList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: true,
-                                    status_notes_comments: document.getElementById("completedList"+ index + "_status_notes_comments").value
+                                    status_notes_comments: document.getElementById("completedList"+ x.id + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(res => {
                                     console.log("Quote approved");
-                                    console.log(res.data);
-                                    API.getEmployeeTasks(this.state.employee.split(" ").join("%20"))
-                                    .then(res2 => {
-                                        console.log(res2.data);
-                                        this.setState({
-                                            tasks: res2.data,
-                                        });
-
+                                    this.getTasks();
                                     this.setState({
                                     tasks: fastSort(fastSort(this.state.tasks).by([
                                     {desc: this.state.desc}
                                     ])).by([
                                     {asc: this.state.asc}
-                                    ])
-                        });
-                                    })
-                                    .catch(err => console.log(err));
-                
+                                    ])});
                                     })
                                 .catch(err => console.log(err))
                             }}/>{' '}
@@ -1256,17 +1243,26 @@ class TaskList extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"completedList"+index+"_quoteApproved"} id={"completedList"+index+"_quoteApproved"} value={false}  onChange = {this.handleInputChange} checked = {!x.quoteApproved} onClick = {() => {
+                            <Input type="radio" name={"completedList"+x.id+"_quoteApproved"} id={"completedList"+x.id+"_quoteApproved"} value={false}  onChange = {this.handleInputChange}  checked = {!isNullOrUndefined(x.quoteApproved) && !x.quoteApproved} onClick = {() => {
                                 console.log(x.id);
                                 var item = {
-                                    // dateCompleted: document.getElementById("completedList"+index+ "_dateCompleted").value,
+                                    // dateCompleted: document.getElementById("completedList"+x.id+ "_dateCompleted").value,
                                     quoteApproved: false,
-                                    // status_notes_comments: document.getElementById("completedList"+ index + "_status_notes_comments")
-                                    dateCompleted:moment(document.getElementById("completedList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
-                                    status_notes_comments: document.getElementById("completedList"+ index + "_status_notes_comments").value
+                                    // status_notes_comments: document.getElementById("completedList"+ x.id + "_status_notes_comments")
+                                    dateCompleted:moment(document.getElementById("completedList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    status_notes_comments: document.getElementById("completedList"+ x.id + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
-                                .then(() => console.log("Quote not approved"))
+                                .then(() => {
+                                    console.log("Quote not approved");
+                                    this.getTasks();
+                                    this.setState({
+                                    tasks: fastSort(fastSort(this.state.tasks).by([
+                                    {desc: this.state.desc}
+                                    ])).by([
+                                    {asc: this.state.asc}
+                                    ])});
+                                    })
                                 .catch(err => console.log(err))
                             }}/>{' '}
                             No
@@ -1274,19 +1270,19 @@ class TaskList extends React.Component{
                         </FormGroup>
                     </FormGroup>
                     </td>
-                    <td key={"completedList"+index+"_completed"}>
+                    <td key={"completedList"+x.id+"_completed"}>
                     <FormGroup tag="fieldset">
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"completedList"+index+"_completed"} checked={x.completed} value={true} onChange = {this.handleInputChange} onClick = {() => {
+                            <Input type="radio" name={"completedList"+x.id+"_completed"}  checked = {!isNullOrUndefined(x.completed) || x.completed} value={true} onChange = {this.handleInputChange} onClick = {() => {
                                 console.log(x.id);
-                                console.log(document.getElementById("completedList"+index+ "_dateCompleted").value, document.getElementById("completedList"+ index + "_status_notes_comments").value);
+                                console.log(document.getElementById("completedList"+x.id+ "_dateCompleted").value, document.getElementById("completedList"+ x.id + "_status_notes_comments").value);
                                 console.log(!isNullOrUndefined(x.quoteApproved))
                                 var item = {
                                     completed: true,
-                                    dateCompleted:moment(document.getElementById("completedList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    dateCompleted:moment(document.getElementById("completedList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
-                                    status_notes_comments: document.getElementById("completedList"+ index + "_status_notes_comments").value
+                                    status_notes_comments: document.getElementById("completedList"+ x.id + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => {console.log("Task completed");
@@ -1299,15 +1295,13 @@ class TaskList extends React.Component{
                         </FormGroup>
                         <FormGroup check>
                             <Label check>
-                            <Input type="radio" name={"completedList"+index+"_completed"} checked={!x.completed} value={false} onChange = {this.handleInputChange} disabled ={
-                                isNullOrUndefined(x.quoteApproved)
-                                } onClick = {() => {
+                            <Input type="radio" name={"completedList"+x.id+"_completed"}  checked = {!isNullOrUndefined(x.completed) && !x.completed} value={false} onChange = {this.handleInputChange} onClick = {() => {
                              console.log(x.id);
                                 var item = {
                                     completed: false,
-                                    dateCompleted:moment(document.getElementById("completedList"+index+ "_dateCompleted").value).format("YYYY-MM-DD"),
+                                    dateCompleted:moment(document.getElementById("completedList"+x.id+ "_dateCompleted").value).format("YYYY-MM-DD"),
                                     quoteApproved: x.quoteApproved,
-                                    status_notes_comments: document.getElementById("completedList"+ index + "_status_notes_comments").value
+                                    status_notes_comments: document.getElementById("completedList"+ x.id + "_status_notes_comments").value
                                 }
                                 API.modifyTask(x.id, item)
                                 .then(() => console.log("Task incomplete"))
