@@ -777,7 +777,7 @@ export default class Example extends React.Component {
                     API.addTask({
                       quotationNumber: this.state.quotationNumber,
                       service: res1.data[i].service,
-                      client: res1.data[i].companyName,
+                      client: this.state.companyName,
                       instructions: this.state.instructions,
                       startDate: this.state.startDate, //sort
                       validThru: this.state.validThru,

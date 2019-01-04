@@ -669,7 +669,7 @@ class TaskList extends React.Component{
                                         API.addTask({
                                             quotationIssuedBy: "Morgan",
                                             quotationNumber: "EMPTY",
-                                            service: `Training`,
+                                            service: `${x.service}`,
                                             client: `${x.client}`,
                                             instructions: `Provide training for ${"QN_" + x.quotationIssuedBy.substring(0,3).toUpperCase() + "_"+ (x.id + 1023)}`,
                                             startDate: `${moment(x.dateAssigned).format("YYYY-MM-DD")}`,

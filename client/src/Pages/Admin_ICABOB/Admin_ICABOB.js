@@ -66,15 +66,26 @@ class Admin_ICABOB extends React.Component{
 
     getTasks = () => {
         if(this.state.employee.length > 0){
-            API.getEmployeeTasks(this.state.employee.split(" ").join("%20"))
-            .then(res => {
-                console.log(res.data);
-                this.setState({
-                    tasks: res.data
-                });
-                this.getCompletedTasks();
-            })
-            .catch(err => console.log(err));
+                API.incompleteTasks(this.state.employee.split(" ").join("%20"))
+                .then(res2 => {
+                    console.log(res2.data);
+                    this.setState({
+                        incomplete : res2.data
+                    })
+                    API.incompleteNullTasks(this.state.employee.split(" ").join("%20"))
+                    .then(res2 => {
+                        console.log(res2.data);
+                        this.setState({
+                            incompleteNullTasks : res2.data
+                        })
+                        this.setState({
+                            tasks: this.state.incomplete.concat(this.state.incompleteNullTasks).concat(this.state.completedTasks).filter(x => x.quoteApproved !== false)
+                        });
+                        this.getCompletedTasks();
+                    })
+                    .catch(err => console.log(err));
+                })
+                .catch(err => console.log(err));
         }
     }
 
@@ -256,8 +267,7 @@ class Admin_ICABOB extends React.Component{
                         client: this.state.client,
                         instructions: this.state.details,
                         startDate: this.state.dateAssigned, //sort
-                        validThru: this.state.dueDate,
-                        qty: parseFloat(this.state.qty)
+                        validThru: this.state.dueDate
                     };
                     API.addTask(item)
                     .then(() => {
@@ -861,7 +871,6 @@ class Admin_ICABOB extends React.Component{
                                     client: document.getElementById("activeList"+x.id+"_client").value, 
                                     dateAssigned: document.getElementById("activeList"+x.id+"_dateAssigned").value,  
                                     dueDate: document.getElementById("activeList"+x.id+"_dueTime").value, 
-                                    qty: document.getElementById("activeList"+x.id+"_serviceUnits").value, 
                                     quoteApproved: !isNullOrUndefined(x.quoteApproved) || x.quoteApproved,
                                     dateCompleted: document.getElementById("activeList"+ x.id + "_dateCompleted").value, 
                                     details: document.getElementById("activeList"+ x.id + "_details").value, 
