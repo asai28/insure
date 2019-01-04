@@ -5,6 +5,8 @@ const url = require('url');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+console.log("THIS IS OUR PORT", PORT);
+
 app.use(express.static("client/build"));
 
 // Serve static files from the React frontend app
